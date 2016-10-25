@@ -1,3 +1,16 @@
+# Creating an IDE for the MEGA65
+
+This is a fork of the xemu emulators by LGB, with the goal of turning the
+MEGA65 emulator into a Retro-themed IDE targetted at the MEGA65 and its
+related development tools, such as the mdb remote debugger, and hot-patch
+utility.
+
+This is a work only just beginning, and will likely progress slowly for the
+time being, unless others join the effort.
+
+Paul Gardner-Stephen, Oct. 2016.
+
+
 # X-Emulators
 
 [![Build Status](https://api.travis-ci.org/lgblgblgb/xemu.svg?branch=master)](https://travis-ci.org/lgblgblgb/xemu)

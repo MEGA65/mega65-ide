@@ -1,4 +1,10 @@
-/* Very primitive emulator of Commodore 65 + sub-set (!!) of Mega65 fetures.
+/* Very primitive IDE for the MEGA65, based on the MEGA65 emulator by
+   LGB.  Basically it will display using the MEGA65 emulation, so that
+   it will be an IDE with an authentically 8-bit look and feel.  It also
+   means that the IDE will potentially be portable to the real MEGA65 hardware,
+   as the UI will be crafted using VIC-IV primitives.
+
+   Very primitive emulator of Commodore 65 + sub-set (!!) of Mega65 fetures.
    Copyright (C)2016 LGB (Gábor Lénárt) <lgblgblgb@gmail.com>
 
 This program is free software; you can redistribute it and/or modify
@@ -289,7 +295,7 @@ static void mega65_init ( const char *disk_image_name, int sid_cycles_per_sec, i
 #ifdef AUDIO_EMULATION
 	SDL_AudioSpec audio_want, audio_got;
 #endif
-	hypervisor_debug_init(KICKSTART_LIST_FILE_NAME);
+	//	hypervisor_debug_init(KICKSTART_LIST_FILE_NAME);
 	hid_init(
 		c64_key_map,
 		VIRTUAL_SHIFT_POS,

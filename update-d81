@@ -1,0 +1,1 @@
+dd if=MEGA65.D81 of=diskimage.10e600 seek=1107456 bs=1

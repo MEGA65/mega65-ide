@@ -1,5 +1,5 @@
 
-CC65=	/usr/local/bin/cc65
+CC65=	/usr/local/bin/cl65
 COPTS=	-t c64 -O -Or -Oi -Os
 
 FILES=		m65ide.prg

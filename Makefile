@@ -1,11 +1,15 @@
 
-CC65=	/usr/local/bin/cl65
+CC65=	/usr/local/bin/cc65
+CL65=	/usr/local/bin/cl65
 COPTS=	-t c64 -O -Or -Oi -Os
 
 FILES=		m65ide.prg
 
 M65IDESOURCES=	main.c \
 		memory.c
+
+ASSFILES=	main.s \
+		memory.s
 
 HEADERS=	Makefile \
 		memory.h
@@ -14,8 +18,17 @@ M65IDE.D81:	$(FILES)
 	if [ -a M65IDE.D81 ]; then rm -f M65IDE.D81; fi
 	cbmconvert -v2 -D8o M65IDE.D81 $(FILES)
 
-m65ide.prg:	$(M65IDESOURCES) $(HEADERS)
-	$(CC65) $(COPT) -o m65ide.prg $(M65IDESOURCES)
+opt65:	opt65.c
+	gcc -o opt65 opt65.c
+
+%.s:	%.c $(HEADERS) ./opt65
+	if [ -a temp.s ]; then rm -f temp.s; fi
+	$(CC65) $(COPT) -o temp.s $<
+	./opt65 temp.s > $@
+	rm temp.s
+
+m65ide.prg:	$(ASSFILES)
+	$(CL65) $(COPT) -o m65ide.prg $(ASSFILES)
 
 clean:
 	rm -f M65IDE.D81 $(FILES)

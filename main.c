@@ -12,7 +12,9 @@ int main()
   POKE(0x0426,0);
   
   lpoke(0x0427,0x22);
-  
+
+  POKE(0x0425,0);
+
   //  printf("$0400 = $%02x\n",lpeek(0x0400));
   return 0;
 }

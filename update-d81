@@ -1,1 +1,2 @@
-dd if=MEGA65.D81 of=diskimage.10e600 seek=1107456 bs=1
+dd if=MEGA65.D81 of=mega65.img seek=1107456 bs=1
+dd if=/dev/null of=mega65.img seek=1024 bs=65536 count=1

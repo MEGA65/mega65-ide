@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #undef debug_parse
 #undef debug_opti1
@@ -45,8 +46,8 @@
 #define isjmp  0x0001 /* set, if command may cause a jump */
 #define fixed  0x0002 /* set, if command should NOT be removed NOR moved */
 #define dupl   0x0004 /* if command makes sense if repeated 
-                              eg. "sta xx, sta xx" doesn't make sense but 
-                                  "inc xx, inc xx" makes sense           */
+			 eg. "sta xx, sta xx" doesn't make sense but 
+			 "inc xx, inc xx" makes sense           */
 #define isinit 0x0008 /* set, if commad initializes some flags or reg_y  */
 
 #define flag_nz    (flag_n|flag_z)
@@ -72,79 +73,79 @@ typedef struct {
 
 static com tok[tok_num]={
 
-   /* Name , depends on.. , modifies...       , special flags */
+  /* Name , depends on.. , modifies...       , special flags */
 
-    { "cmp", reg_a|mem    , flag_arith        , 0       },
-    { "cpx", reg_x|mem    , flag_arith        , 0       },
-    { "cpy", reg_y|mem    , flag_arith        , 0       },
+  { "cmp", reg_a|mem    , flag_arith        , 0       },
+  { "cpx", reg_x|mem    , flag_arith        , 0       },
+  { "cpy", reg_y|mem    , flag_arith        , 0       },
 
-	{ "bit", reg_a|mem    , flag_nzc|flag_v   , fixed   },
+  { "bit", reg_a|mem    , flag_nzc|flag_v   , fixed   },
 
-	{ "bcc", flag_c       , 0                 , isjmp   },
-	{ "bcs", flag_c       , 0                 , isjmp   },
-	{ "beq", flag_z       , 0                 , isjmp   },
-	{ "bne", flag_z       , 0                 , isjmp   },
-	{ "bmi", flag_n       , 0                 , isjmp   },
-	{ "bpl", flag_n       , 0                 , isjmp   },
-	{ "bvc", flag_v       , 0                 , isjmp   },
-    { "bvs", flag_v       , 0                 , isjmp   },
+  { "bcc", flag_c       , 0                 , isjmp   },
+  { "bcs", flag_c       , 0                 , isjmp   },
+  { "beq", flag_z       , 0                 , isjmp   },
+  { "bne", flag_z       , 0                 , isjmp   },
+  { "bmi", flag_n       , 0                 , isjmp   },
+  { "bpl", flag_n       , 0                 , isjmp   },
+  { "bvc", flag_v       , 0                 , isjmp   },
+  { "bvs", flag_v       , 0                 , isjmp   },
 
-    { "jmp", mem          , 0                 , isjmp   },
-    { "jsr", reg_s|mem    , reg_s|mem         , isjmp   },
+  { "jmp", mem          , 0                 , isjmp   },
+  { "jsr", reg_s|mem    , reg_s|mem         , isjmp   },
 
-    { "asl", reg_a|mem        , reg_a|flag_nzc|mem    , dupl    },
-    { "lsr", reg_a|mem        , reg_a|flag_nzc|mem    , dupl    },
-    { "rol", reg_a|flag_c|mem , reg_a|flag_nzc|mem    , dupl    },
-    { "ror", reg_a|flag_c|mem , reg_a|flag_nzc|mem    , dupl    },
+  { "asl", reg_a|mem        , reg_a|flag_nzc|mem    , dupl    },
+  { "lsr", reg_a|mem        , reg_a|flag_nzc|mem    , dupl    },
+  { "rol", reg_a|flag_c|mem , reg_a|flag_nzc|mem    , dupl    },
+  { "ror", reg_a|flag_c|mem , reg_a|flag_nzc|mem    , dupl    },
 
-    { "clc", 0            , flag_c            , isinit  },
-    { "cld", 0            , flag_d            , isinit   },
-    { "cli", 0            , flag_i            , fixed   },
-    { "clv", 0            , flag_v            , isinit   },
-    { "sec", 0            , flag_c            , isinit   },
-    { "sed", 0            , flag_d            , isinit   },
-	{ "sei", 0            , flag_i            , fixed   },
+  { "clc", 0            , flag_c            , isinit  },
+  { "cld", 0            , flag_d            , isinit   },
+  { "cli", 0            , flag_i            , fixed   },
+  { "clv", 0            , flag_v            , isinit   },
+  { "sec", 0            , flag_c            , isinit   },
+  { "sed", 0            , flag_d            , isinit   },
+  { "sei", 0            , flag_i            , fixed   },
 
-	{ "nop", 0            , 0                 , fixed   },
+  { "nop", 0            , 0                 , fixed   },
 
-    { "rts", reg_s|mem    , reg_s             , isjmp   },
-	{ "rti", reg_s|mem    , reg_s|reg_sr      , isjmp   },
-	{ "brk", 0            , reg_s|reg_sr|mem  , isjmp   },
+  { "rts", reg_s|mem    , reg_s             , isjmp   },
+  { "rti", reg_s|mem    , reg_s|reg_sr      , isjmp   },
+  { "brk", 0            , reg_s|reg_sr|mem  , isjmp   },
 
-    { "lda", mem          , reg_a|flag_nz     , 0       },
-	{ "ldx", mem          , reg_x|flag_nz     , 0       },
-	{ "ldy", mem          , reg_y|flag_nz     , isinit  },
+  { "lda", mem          , reg_a|flag_nz     , 0       },
+  { "ldx", mem          , reg_x|flag_nz     , 0       },
+  { "ldy", mem          , reg_y|flag_nz     , isinit  },
 
-    { "sta", reg_a        , mem               , 0       },
-	{ "stx", reg_x        , mem               , 0       },
-	{ "sty", reg_y        , mem               , 0       },
+  { "sta", reg_a        , mem               , 0       },
+  { "stx", reg_x        , mem               , 0       },
+  { "sty", reg_y        , mem               , 0       },
 
-    { "tax", reg_a        , reg_x|flag_nz     , 0       },
-	{ "tay", reg_a        , reg_y|flag_nz     , isinit  },
-	{ "txa", reg_x        , reg_a|flag_nz     , 0       },
-	{ "tya", reg_y        , reg_a|flag_nz     , 0       },
-	{ "txs", reg_x        , reg_s|flag_nz     , 0       },
-	{ "tsx", reg_s        , reg_x|flag_nz     , 0       },
+  { "tax", reg_a        , reg_x|flag_nz     , 0       },
+  { "tay", reg_a        , reg_y|flag_nz     , isinit  },
+  { "txa", reg_x        , reg_a|flag_nz     , 0       },
+  { "tya", reg_y        , reg_a|flag_nz     , 0       },
+  { "txs", reg_x        , reg_s|flag_nz     , 0       },
+  { "tsx", reg_s        , reg_x|flag_nz     , 0       },
 
-	{ "pla", reg_s|mem    , reg_a|reg_s|flag_nz , dupl  },
-	{ "plp", reg_s|mem    , reg_sr|reg_s      , dupl    },
-	{ "pha", reg_a|reg_s  , reg_s|mem         , dupl    },
-	{ "php", reg_sr|reg_s , reg_s|mem         , dupl    },
+  { "pla", reg_s|mem    , reg_a|reg_s|flag_nz , dupl  },
+  { "plp", reg_s|mem    , reg_sr|reg_s      , dupl    },
+  { "pha", reg_a|reg_s  , reg_s|mem         , dupl    },
+  { "php", reg_sr|reg_s , reg_s|mem         , dupl    },
 
-    { "adc", reg_a|flag_c|flag_d|mem , reg_a|flag_arith  , dupl },
-	{ "sbc", reg_a|flag_c|flag_d|mem , reg_a|flag_arith  , dupl },
+  { "adc", reg_a|flag_c|flag_d|mem , reg_a|flag_arith  , dupl },
+  { "sbc", reg_a|flag_c|flag_d|mem , reg_a|flag_arith  , dupl },
 
-	{ "inc", mem          , mem|flag_nz       , dupl    },
-	{ "dec", mem          , mem|flag_nz       , dupl    },
-    { "inx", reg_x        , reg_x|flag_nz     , dupl    },
-	{ "dex", reg_x        , reg_x|flag_nz     , dupl    },
-	{ "iny", reg_y        , reg_y|flag_nz     , dupl|isinit    },
-	{ "dey", reg_y        , reg_y|flag_nz     , dupl|isinit    },
+  { "inc", mem          , mem|flag_nz       , dupl    },
+  { "dec", mem          , mem|flag_nz       , dupl    },
+  { "inx", reg_x        , reg_x|flag_nz     , dupl    },
+  { "dex", reg_x        , reg_x|flag_nz     , dupl    },
+  { "iny", reg_y        , reg_y|flag_nz     , dupl|isinit    },
+  { "dey", reg_y        , reg_y|flag_nz     , dupl|isinit    },
 
-    { "and", reg_a|mem        , reg_a|flag_nz     , 0       },
-	{ "ora", reg_a|mem        , reg_a|flag_nz     , 0       },
-	{ "eor", reg_a|mem        , reg_a|flag_nz     , 0       }
-  };
+  { "and", reg_a|mem        , reg_a|flag_nz     , 0       },
+  { "ora", reg_a|mem        , reg_a|flag_nz     , 0       },
+  { "eor", reg_a|mem        , reg_a|flag_nz     , 0       }
+};
 
 #define  as_cmp 0
 #define  as_cpx 1
@@ -214,7 +215,7 @@ typedef struct {
   int   par;    /* command parameter              */
   int   mpar;   /* memory-address of dep or mod   */
   int   mparhi; /* high-byte if indirect addressed*/
-  } line;
+} line;
 
 #define blkbuf_max 500  /* max blocksize of 500 lines should do the job */
 
@@ -325,13 +326,13 @@ void lineout(line *p)
   else if ( p->tok==null_tok ) printf("---");
   else printf("%s",tok[p->tok].text);
   printf(" dep:");
-   mapout(p->dep);
+  mapout(p->dep);
   printf(" mod:");
-   mapout(p->mod);
+  mapout(p->mod);
   printf(" feeds:");
-   mapout(p->feeds);
+  mapout(p->feeds);
   printf(" passes:");
-   mapout(p->passes);
+  mapout(p->passes);
   printf(" fl:%2i",p->flags);
   if (p->par!=no_par) { 
     printf(" \"%s\"  [%i",&parbuf[par_pos[p->par]],p->par);
@@ -655,9 +656,9 @@ int parse_line(char *a, line *p)
 
   j=0;
   while (j<tok_num &&
-          !(   a[i  ]==tok[j].text[0]
-            && a[i+1]==tok[j].text[1]
-            && a[i+2]==tok[j].text[2] ) ) j++;
+	 !(   a[i  ]==tok[j].text[0]
+	      && a[i+1]==tok[j].text[1]
+	      && a[i+2]==tok[j].text[2] ) ) j++;
   if (j==tok_num) {
     while (a[i]!=' ' && a[i]!='\t' && a[i]!='\0') i++;
     x=parse_line(&a[i], p);
@@ -709,7 +710,7 @@ int parse_line(char *a, line *p)
 
   j=i;
   while ( a[j]!='\0' && a[j]!=';' && a[j]!=',' && a[j]!=')' 
-                     && a[j]!=' ' && a[j]!='\t' ) j++;
+	  && a[j]!=' ' && a[j]!='\t' ) j++;
   j=j-i;
 
   /* now "i" exactly points to start of mem-address, j is length */
@@ -786,7 +787,7 @@ void make_feedlist()
     p=&blkbuf[i];
     p->feeds=p->mod & hlp;
     p->passes=hlp & ~p->mod;
-    hlp=(hlp & ( ~p->mod )) | p->dep & valid_map;
+    hlp=(hlp & ( ~p->mod )) | (p->dep & valid_map);
 
     if (p->depind & mem) { 
 
@@ -823,8 +824,8 @@ void make_feedlist()
             mpar_flag[p->mpar]=0; }
           else p->passes|=mem; }
 
-        if (p->dep & mem) {
-          mpar_flag[p->mpar]=1; } }
+      if (p->dep & mem) {
+	mpar_flag[p->mpar]=1; } }
 
     i--; }
 }
@@ -891,191 +892,194 @@ int opti1()
     if (p->par!=no_par && (p->depind&mem)==0) { /* mem=0 so its # or a */
       if (p->depind&absolute) val=p->mpar; else val=undefd;
 
-      switch (p->tok) {
-
-	    case as_lda: { 
-          if (rega==val && val!=undefd && (p->feeds&reg_sr)==0) {
+      {
+	switch (p->tok) {
+	  
+	case as_lda: { 
+	  if (rega==val && val!=undefd && (p->feeds&reg_sr)==0) {
 #           ifdef debug_opti1
-            printf("*** %i redundant lda#\n",i);
+	    printf("*** %i redundant lda#\n",i);
 #           endif
-            done=2; }
-          else done=1;
-          rega=val; 
-          break; } 
-
-        case as_ldx: { 
-          if (regx==val && val!=undefd && (p->feeds&reg_sr)==0) {
+	    done=2; }
+	  else done=1;
+	  rega=val; 
+	  break; } 
+	    
+	case as_ldx: { 
+	  if (regx==val && val!=undefd && (p->feeds&reg_sr)==0) {
 #           ifdef debug_opti1
-            printf("*** %i redundant ldx#\n",i);
+	    printf("*** %i redundant ldx#\n",i);
 #           endif
-            done=2; }
-          else done=1;
-          regx=val; 
-          break; }
-
-        case as_ldy: { 
-          if (regy==val && val!=undefd && (p->feeds&reg_sr)==0) {
+	    done=2; }
+	  else done=1;
+	  regx=val; 
+	  break; }
+	    
+	case as_ldy: { 
+	  if (regy==val && val!=undefd && (p->feeds&reg_sr)==0) {
 #           ifdef debug_opti1
-            printf("*** %i redundant ldy#\n",i);
+	    printf("*** %i redundant ldy#\n",i);
 #           endif
-            done=2; }
-          else done=1; 
-          regy=val; 
-          break; }
-
-        case as_and: { 
-          if ( (val!=undefd && rega!=undefd) || val==0 || rega==0 ) {
-            rega&=val;
+	    done=2; }
+	  else done=1; 
+	  regy=val; 
+	  break; }
+	    
+	case as_and: { 
+	  if ( (val!=undefd && rega!=undefd) || val==0 || rega==0 ) {
+	    rega&=val;
 #           ifdef debug_opti1
-            printf("### %i known and#-result #%i\n", i, rega);
+	    printf("### %i known and#-result #%i\n", i, rega);
 #           endif
-            /* replace "and #nn" with "lda #" */
-            set_absval(p,rega);
-            p->tok=as_lda;
-            p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
-            flag=done=1; }
-          else {
-            if ( (val==0xff) && (p->feeds&reg_sr)==0 ) {
+	    /* replace "and #nn" with "lda #" */
+	    set_absval(p,rega);
+	    p->tok=as_lda;
+	    p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
+	    flag=done=1; }
+	  else {
+	    if ( (val==0xff) && (p->feeds&reg_sr)==0 ) {
 #             ifdef debug_opti1
-              printf("*** %i redundant and#\n",i);
+	      printf("*** %i redundant and#\n",i);
 #             endif
-              done=2; }
-            else done=1;
-            rega=undefd; }
-          break; }
-
-        case as_ora: { 
-          if ( (val!=undefd && rega!=undefd) || val==0xff || rega==0xff ) {
-            rega|=val;
+	      done=2; }
+	    else done=1;
+	    rega=undefd; }
+	  break; }
+	    
+	case as_ora: { 
+	  if ( (val!=undefd && rega!=undefd) || val==0xff || rega==0xff ) {
+	    rega|=val;
 #           ifdef debug_opti1
-            printf("### %i known ora#-result #%i\n", i, rega);
+	    printf("### %i known ora#-result #%i\n", i, rega);
 #           endif
-            /* replace "ora #nn" with "lda #" */
-            set_absval(p,rega);
-            p->tok=as_lda;
-            p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
-            flag=done=1; }
-          else {
-            if ( (val==0) && (p->feeds&reg_sr)==0 ) {
+	    /* replace "ora #nn" with "lda #" */
+	    set_absval(p,rega);
+	    p->tok=as_lda;
+	    p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
+	    flag=done=1; }
+	  else {
+	    if ( (val==0) && (p->feeds&reg_sr)==0 ) {
 #             ifdef debug_opti1
-              printf("*** %i redundant ora#\n",i);
+	      printf("*** %i redundant ora#\n",i);
 #             endif
-              done=2; }
-            else done=1;
-            rega=undefd; }
-          break; }
-
-        case as_eor: { 
-          if ( val!=undefd && rega!=undefd ) {
-            rega^=val;
+	      done=2; }
+	    else done=1;
+	    rega=undefd; }
+	  break; }
+	    
+	case as_eor: { 
+	  if ( val!=undefd && rega!=undefd ) {
+	    rega^=val;
 #           ifdef debug_opti1
-            printf("### %i known eor#-result #%i\n", i, rega);
+	    printf("### %i known eor#-result #%i\n", i, rega);
 #           endif
-            /* replace "eor #nn" with "lda #" */
-            set_absval(p,rega);
-            p->tok=as_lda;
-            p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
-            flag=done=1; }
-          else {
-            if ( (val==0) && (p->feeds&reg_sr)==0 ) {
+	    /* replace "eor #nn" with "lda #" */
+	    set_absval(p,rega);
+	    p->tok=as_lda;
+	    p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
+	    flag=done=1; }
+	  else {
+	    if ( (val==0) && (p->feeds&reg_sr)==0 ) {
 #             ifdef debug_opti1
-              printf("*** %i redundant eor#\n",i);
+	      printf("*** %i redundant eor#\n",i);
 #             endif
-              done=2; }
-            else done=1;
-            rega=undefd; }
-          break; }
-      }
+	      done=2; }
+	    else done=1;
+	    rega=undefd; }
+	  break; }
 	}
-
+      }
+    }
+	
     if ( (p->depind & (mem|imem|reg_x|reg_y))==mem ) {
       par=&mpar_flag[p->mpar];
 
-      switch (p->tok) {
-
-	    case as_sta: { 
-          if (*par==rega && rega!=undefd) {
+      {
+	switch (p->tok) {
+	    
+	case as_sta: { 
+	  if (*par==rega && rega!=undefd) {
 #           ifdef debug_opti1
-            printf("*** %i redundant sta\n",i);
+	    printf("*** %i redundant sta\n",i);
 #           endif
-            done=2; }
-          else done=1;
-          *par=rega; 
-          break; }
-
-	    case as_stx: { 
-          if (*par==regx && regx!=undefd) {
+	    done=2; }
+	  else done=1;
+	  *par=rega; 
+	  break; }
+	    
+	case as_stx: { 
+	  if (*par==regx && regx!=undefd) {
 #           ifdef debug_opti1
-            printf("*** %i redundant stx\n",i);
+	    printf("*** %i redundant stx\n",i);
 #           endif
-            done=2; }
-          else done=1;
-          *par=regx; 
-          break; }
-
-	    case as_sty: { 
-          if (*par==regy && regy!=undefd) {
+	    done=2; }
+	  else done=1;
+	  *par=regx; 
+	  break; }
+	    
+	case as_sty: { 
+	  if (*par==regy && regy!=undefd) {
 #           ifdef debug_opti1
-            printf("*** %i redundant sty\n",i);
+	    printf("*** %i redundant sty\n",i);
 #           endif
-            done=2; }
-          else done=1;
-          *par=regy; 
-          break; }
-
-        case as_inc: { if (*par!=undefd) *par=0xff&(*par+1); done=1; break; }
-
-        case as_dec: { if (*par!=undefd) *par=0xff&(*par-1); done=1; break; }
-
-        case as_and: { 
-          if ( (*par!=undefd && rega!=undefd) || *par==0 || rega==0 ) {
-            rega&=*par;
+	    done=2; }
+	  else done=1;
+	  *par=regy; 
+	  break; }
+	    
+	case as_inc: { if (*par!=undefd) *par=0xff&(*par+1); done=1; break; }
+	    
+	case as_dec: { if (*par!=undefd) *par=0xff&(*par-1); done=1; break; }
+	    
+	case as_and: { 
+	  if ( (*par!=undefd && rega!=undefd) || *par==0 || rega==0 ) {
+	    rega&=*par;
 #           ifdef debug_opti1
-            printf("*** %i known and-result #%i\n", i, rega);
+	    printf("*** %i known and-result #%i\n", i, rega);
 #           endif
-            /* replace "and adr" with "lda #" */
-            set_absval(p,rega);
-            p->tok=as_lda;
-            p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
-            opt++;
-            flag=done=1; }
-          else {
-            if ( *par==0xff && (p->feeds&reg_sr)==0 ) {
+	    /* replace "and adr" with "lda #" */
+	    set_absval(p,rega);
+	    p->tok=as_lda;
+	    p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
+	    opt++;
+	    flag=done=1; }
+	  else {
+	    if ( *par==0xff && (p->feeds&reg_sr)==0 ) {
 #             ifdef debug_opti1
-              printf("*** %i redundant and\n",i);
+	      printf("*** %i redundant and\n",i);
 #             endif
-              done=2; }
-            else 
-              if ( *par!=undefd ) {
+	      done=2; }
+	    else 
+	      if ( *par!=undefd ) {
 #               ifdef debug_opti1
-                printf("*** %i known par #%i of and\n",i,*par);
+		printf("*** %i known par #%i of and\n",i,*par);
 #               endif
-                /* replace "and adr" with "and #" */
-                set_absval(p,*par);
-                opt++;
-                flag=done=1; }
-            rega=undefd; }
-          break; }
-
-        case as_ora: { 
-          if ( (*par!=undefd && rega!=undefd) || *par==0xff || rega==0xff ) {
-            rega|=*par;
+		/* replace "and adr" with "and #" */
+		set_absval(p,*par);
+		opt++;
+		flag=done=1; }
+	    rega=undefd; }
+	  break; }
+	    
+	case as_ora: { 
+	  if ( (*par!=undefd && rega!=undefd) || *par==0xff || rega==0xff ) {
+	    rega|=*par;
 #           ifdef debug_opti1
-            printf("*** %i known ora-result #%i\n", i, rega);
+	    printf("*** %i known ora-result #%i\n", i, rega);
 #           endif
-            /* replace "ora adr" with "lda #" */
-            set_absval(p,rega);
-            p->tok=as_lda;
-            p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
-            opt++;
-            flag=done=1; }
-          else {
-            if ( (*par==0) && (p->feeds&reg_sr)==0 ) {
+	    /* replace "ora adr" with "lda #" */
+	    set_absval(p,rega);
+	    p->tok=as_lda;
+	    p->dep=tok[as_lda].dep; p->flags=tok[as_lda].flags;
+	    opt++;
+	    flag=done=1; }
+	  else {
+	    if ( (*par==0) && (p->feeds&reg_sr)==0 ) {
 #             ifdef debug_opti1
-              printf("*** %i redundant ora\n",i);
+	      printf("*** %i redundant ora\n",i);
 #             endif
-              done=2; }
-            else 
+	      done=2; }
+	    else 
               if ( *par!=undefd ) {
 #               ifdef debug_opti1
                 printf("*** %i known par #%i of ora\n",i,*par);
@@ -1217,26 +1221,27 @@ int opti1()
           regy=*par;
           done=1; 
           break; }
-	  }
 	}
+      }
+    }
     switch (p->tok) {
-      case as_inx: { if (regx!=undefd) regx=0xff&(regx+1); done=1; break; }
-      case as_iny: { if (regy!=undefd) regy=0xff&(regy+1); done=1; break; }
-      case as_dex: { if (regx!=undefd) regx=0xff&(regx-1); done=1; break; }
-      case as_dey: { if (regy!=undefd) regy=0xff&(regy-1); done=1; break; } 
-	}
+    case as_inx: { if (regx!=undefd) regx=0xff&(regx+1); done=1; break; }
+    case as_iny: { if (regy!=undefd) regy=0xff&(regy+1); done=1; break; }
+    case as_dex: { if (regx!=undefd) regx=0xff&(regx-1); done=1; break; }
+    case as_dey: { if (regy!=undefd) regy=0xff&(regy-1); done=1; break; } 
+    }
 
-  if (i!=j) line_copy(&blkbuf[j],&blkbuf[i]);
+    if (i!=j) line_copy(&blkbuf[j],&blkbuf[i]);
 
-  if (done==0) {
-    if ( p->mod & reg_a ) rega=undefd;
-    if ( p->mod & reg_x ) regx=undefd;
-    if ( p->mod & reg_y ) regy=undefd;
-    if ( p->depind & p->mod & mem ) mpar_flag[p->mpar]=undefd;
-    j++; }
-  else { if (done==2) { opt++; flag=1; } else j++; }
+    if (done==0) {
+      if ( p->mod & reg_a ) rega=undefd;
+      if ( p->mod & reg_x ) regx=undefd;
+      if ( p->mod & reg_y ) regy=undefd;
+      if ( p->depind & p->mod & mem ) mpar_flag[p->mpar]=undefd;
+      j++; }
+    else { if (done==2) { opt++; flag=1; } else j++; }
 
-  i++; } 
+    i++; } 
   
   blkbuf_len=j;
   return (flag);
@@ -1286,7 +1291,7 @@ void repl1(int i, int j, int parsrc, int newtok)
   int x;
   line *lj, *lparsrc;
 
-   if (test_match) return;
+  if (test_match) return;
 
   lj=&blkbuf[j];
   lparsrc=&blkbuf[parsrc];
@@ -1335,34 +1340,34 @@ void set_tcom(int j, int com)
 
 int add_dep(line *p, int hlp, int map)
 {
-    hlp=((hlp & ( ~p->mod )) | p->dep) & valid_map;
+  hlp=((hlp & ( ~p->mod )) | p->dep) & valid_map;
 
-    if (p->depind & mem) { 
+  if (p->depind & mem) { 
 
-      if (p->depind & imem) {
+    if (p->depind & imem) {
 
-        /* dep: ptr,ptr+1 */
+      /* dep: ptr,ptr+1 */
  
-        mpar_flag[p->mpar]|=map;
-        mpar_flag[p->mparhi]|=map;
+      mpar_flag[p->mpar]|=map;
+      mpar_flag[p->mparhi]|=map;
 
-        if (p->dep&mem) hlp|=imem; }
+      if (p->dep&mem) hlp|=imem; }
 
-      else if (p->depind & (reg_x|reg_y) ) {
+    else if (p->depind & (reg_x|reg_y) ) {
       
-        /* dep: ptr */
+      /* dep: ptr */
 
-        mpar_flag[p->mpar]|=map;
+      mpar_flag[p->mpar]|=map;
 
-        if (p->dep&mem) hlp|=imem; }
+      if (p->dep&mem) hlp|=imem; }
 
-      else
+    else
   
-        /* normal addressed memory (direct) */
+      /* normal addressed memory (direct) */
 
-        if ( mpar_flag[p->mpar]!=0 && (p->mod & mem)!=0 ) mpar_flag[p->mpar]&=~map;
-        if (p->dep & mem) mpar_flag[p->mpar]|=map;
-    }
+      if ( mpar_flag[p->mpar]!=0 && (p->mod & mem)!=0 ) mpar_flag[p->mpar]&=~map;
+    if (p->dep & mem) mpar_flag[p->mpar]|=map;
+  }
 
   return hlp;
 }
@@ -1558,7 +1563,7 @@ int opti2()
         line_copy(tmp,il);
         line_copy(il,jl);
         line_copy(jl,tmp); } }
-  i++; }
+    i++; }
 
   make_feedlist();
 
@@ -1575,8 +1580,8 @@ int opti2()
 #         endif
           if (try_sim2(i,j)) return 1; }
         else if (blkbuf[j].par==blkbuf[i].par) break;
-	  j++; }
-	}
+	j++; }
+    }
 
     if (blkbuf[i].tok==as_tax) {
       j=i+1;
@@ -1587,10 +1592,10 @@ int opti2()
 #         endif
           if (try_sim2(i,j)) return 1; }
         else if (blkbuf[j].dep&reg_x) break;
-      j++; }
-	}
+	j++; }
+    }
 
-  i++; }
+    i++; }
 
   /* so, can't move blocks but may be we can use registers
      istead of tmpxx ? */
@@ -1607,7 +1612,7 @@ int opti2()
         line_copy(tmp,il);
         line_copy(il,jl);
         line_copy(jl,tmp); } }
-  i++; }
+    i++; }
 
   make_feedlist();
 
@@ -1631,9 +1636,9 @@ int opti2()
             set_tcom(i,as_tax); set_tcom(j,as_txa);
             return 1; } }
         else if (blkbuf[j].par==blkbuf[i].par) break;
-	  j++; }
-	}
-  i++; }
+	j++; }
+    }
+    i++; }
 
   return 0;
 }
@@ -1764,7 +1769,7 @@ int com_match2_lda(int j)
       op2msg("lda,tay -> ldy\n"); 
       repl1(com_match_lnum,j,com_match_lnum,as_ldy); 
       return 1; }
-    }
+  }
 
   if ( b->tok==as_sta && com_match_lptr->par==blkbuf[j].par ) { 
     op2msg("lda,sta -> lda\n"); 
@@ -1885,19 +1890,19 @@ int (*com_match1(int i))()
   com_match_lptr=&blkbuf[i];
 
   switch (com_match_lptr->tok) {
-    case as_tax: return com_match2_tax;
-    case as_txa: return com_match2_txa;
-    case as_tay: return com_match2_tay;
-    case as_tya: return com_match2_tya;
-    case as_txs: return com_match2_txs;
-    case as_tsx: return com_match2_tsx;
-    case as_lda: return com_match2_lda;
-    case as_ldx: return com_match2_ldx;
-    case as_ldy: return com_match2_ldy;
-    case as_sta: return com_match2_sta;
-    case as_stx: return com_match2_stx;
-    case as_sty: return com_match2_sty;
-    default:     return com_match2_default;
+  case as_tax: return com_match2_tax;
+  case as_txa: return com_match2_txa;
+  case as_tay: return com_match2_tay;
+  case as_tya: return com_match2_tya;
+  case as_txs: return com_match2_txs;
+  case as_tsx: return com_match2_tsx;
+  case as_lda: return com_match2_lda;
+  case as_ldx: return com_match2_ldx;
+  case as_ldy: return com_match2_ldy;
+  case as_sta: return com_match2_sta;
+  case as_stx: return com_match2_stx;
+  case as_sty: return com_match2_sty;
+  default:     return com_match2_default;
   }
   return NULL;
 }
@@ -1979,30 +1984,30 @@ void optimize_block()
 
   opt=0;
 
- while (1) {
-  make_feedlist();
+  while (1) {
+    make_feedlist();
 
 # ifdef debug
-  i=0;
-  while (i<blkbuf_len) {
-    printf("%3i:",i);
-    lineout(&blkbuf[i]);
-    i++; }
+    i=0;
+    while (i<blkbuf_len) {
+      printf("%3i:",i);
+      lineout(&blkbuf[i]);
+      i++; }
 # endif
 
-  dbmsg("simple...\n");
-  if (simple_erase()) continue;
+    dbmsg("simple...\n");
+    if (simple_erase()) continue;
 
-  dbmsg("opti1...\n");
-  if (opti1()) continue;
+    dbmsg("opti1...\n");
+    if (opti1()) continue;
 
-  dbmsg("opti2...\n");
-  if (opti2()) continue;
+    dbmsg("opti2...\n");
+    if (opti2()) continue;
 
-  dbmsg("opti3...\n");
-  if (opti3()) continue;
+    dbmsg("opti3...\n");
+    if (opti3()) continue;
 
-  break;
+    break;
   }
 
 # ifdef debug
@@ -2053,18 +2058,18 @@ main(int argc, char **argv)
       blk_mod=0;
       while (linebuf[i]!='\0') {
         switch (linebuf[i]) {
-          case 'a':  { wall_flag=reg_a; break; }
-          case 'x':  { wall_flag=reg_x; break; }
-          case 'y':  { wall_flag=reg_y; break; }
-          case 'n':  { wall_flag=flag_n; break; }
-          case 'z':  { wall_flag=flag_z; break; }
-          case 'v':  { wall_flag=flag_v; break; }
-          case 'c':  { wall_flag=flag_c; break; }
-          case 'd':  { wall_flag=flag_d; break; }
-          case 'i':  { wall_flag=flag_i; break; }
-          default :  { 
-            printf("  error: unknown flag/register \"%c\"\n",linebuf[i]); exit(1); }          
-		  }
+	case 'a':  { wall_flag=reg_a; break; }
+	case 'x':  { wall_flag=reg_x; break; }
+	case 'y':  { wall_flag=reg_y; break; }
+	case 'n':  { wall_flag=flag_n; break; }
+	case 'z':  { wall_flag=flag_z; break; }
+	case 'v':  { wall_flag=flag_v; break; }
+	case 'c':  { wall_flag=flag_c; break; }
+	case 'd':  { wall_flag=flag_d; break; }
+	case 'i':  { wall_flag=flag_i; break; }
+	default :  { 
+	  printf("  error: unknown flag/register \"%c\"\n",linebuf[i]); exit(1); }          
+	}
         blk_mod|=wall_flag; 
         i=nextchar(linebuf,i+1); }
 
@@ -2098,8 +2103,8 @@ main(int argc, char **argv)
       puts(linebuf);
       clear_buf(); }
     else { if (tmp.tok==as_jsr) printf("argh!"); 
-           add_line(&tmp); }
-  wall_flag=0;
+      add_line(&tmp); }
+    wall_flag=0;
   }
 
   fclose(fin);

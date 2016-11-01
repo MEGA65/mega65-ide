@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include "memory.h"
 
+void write_d02f(unsigned char v)
+{
+  POKE(0xd02fU,v);
+}
+
 int main()
 {
   // Enable C65 features
-  POKE(0xd02fU,0xA5);
-  POKE(0xd02fU,0x96);
+  write_d02f(0xA5);
+  write_d02f(0x96);
 
   //  POKE(0xd031U,0xff);
   

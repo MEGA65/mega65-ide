@@ -78,3 +78,16 @@ void lcopy(long source_address, long destination_address,
   do_dma();
   return;
 }
+
+void lfill(long destination_address, unsigned char value,
+	  unsigned int count)
+{
+  dmalist.command=0x03; // fill
+  dmalist.count=count;
+  dmalist.source_addr=value;
+  dmalist.dest_addr=destination_address&0xffff;
+  dmalist.dest_bank=(destination_address>>16)&0x7f;
+
+  do_dma();
+  return;
+}

@@ -20,6 +20,19 @@ struct dmagic_dmalist {
 struct dmagic_dmalist dmalist;
 unsigned char dma_byte;
 
+void do_dma(void)
+{
+#ifdef MEGA65
+  // Now run DMA job (to and from low 1MB, and list is in low 1MB)
+  POKE(0xd702U,0);
+  POKE(0xd704U,0);
+  POKE(0xd705U,0);
+  POKE(0xd706U,0);
+#endif
+  POKE(0xd701U,((unsigned int)&dmalist)>>8);
+  POKE(0xd700U,((unsigned int)&dmalist)&0xff); // triggers DMA
+}
+
 unsigned char lpeek(long address)
 {
   // Read the byte at <address> in 28-bit address space
@@ -33,16 +46,8 @@ unsigned char lpeek(long address)
   dmalist.dest_addr=(unsigned int)&dma_byte;
   dmalist.dest_bank=0;
 
-#ifdef MEGA65
-  // Now run DMA job (to and from low 1MB, and list is in low 1MB)
-  POKE(0xd702U,0);
-  POKE(0xd704U,0);
-  POKE(0xd705U,0);
-  POKE(0xd706U,0);
-#endif
-  POKE(0xd701U,((unsigned int)&dmalist)>>8);
-  POKE(0xd700U,((unsigned int)&dmalist)&0xff); // triggers DMA
-  
+  do_dma();
+   
   return dma_byte;
 }
 
@@ -56,21 +61,20 @@ void lpoke(long address, unsigned char value)
   dmalist.dest_addr=address&0xffff;
   dmalist.dest_bank=(address>>16)&0x7f;
 
-#ifdef MEGA65
-  // Now run DMA job (to and from low 1MB, and list is in low 1MB)
-  POKE(0xd702U,0);
-  POKE(0xd704U,0);
-  POKE(0xd705U,0);
-  POKE(0xd706U,0);
-#endif
-  POKE(0xd701U,((unsigned int)&dmalist)>>8);
-  POKE(0xd700U,((unsigned int)&dmalist)&0xff); // triggers DMA
-
+  do_dma(); 
   return;
 }
 
 void lcopy(long source_address, long destination_address,
 	  unsigned int count)
 {
+  dmalist.command=0x00; // copy
+  dmalist.count=count;
+  dmalist.source_addr=source_address&0xffff;
+  dmalist.source_bank=(source_address>>16)&0x7f;
+  dmalist.dest_addr=destination_address&0xffff;
+  dmalist.dest_bank=(destination_address>>16)&0x7f;
+
+  do_dma();
   return;
 }

@@ -47,10 +47,7 @@ unsigned char lpeek(long address)
 }
 
 void lpoke(long address, unsigned char value)
-{
-  unsigned char i;
-  unsigned char v;
-  
+{  
   dma_byte=value;
   dmalist.command=0x00; // copy
   dmalist.count=1;
@@ -58,13 +55,6 @@ void lpoke(long address, unsigned char value)
   dmalist.source_bank=0;
   dmalist.dest_addr=address&0xffff;
   dmalist.dest_bank=(address>>16)&0x7f;
-
-  for(i=0;i<12;i++) {
-    v=PEEK((unsigned int)(&dmalist)+i);
-    POKE(0x0400U+i,v);
-  }
-  POKE(0x0428U,(unsigned int)(&dma_byte)&0xff);
-  POKE(0x0429U,(((unsigned int)&dma_byte)>>8)&0xff);
 
 #ifdef MEGA65
   // Now run DMA job (to and from low 1MB, and list is in low 1MB)
@@ -76,7 +66,6 @@ void lpoke(long address, unsigned char value)
   POKE(0xd701U,((unsigned int)&dmalist)>>8);
   POKE(0xd700U,((unsigned int)&dmalist)&0xff); // triggers DMA
 
-  POKE(0xd021U,0);
   return;
 }
 

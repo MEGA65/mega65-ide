@@ -8,19 +8,22 @@ FILES=		m65ide.prg \
 
 M65IDESOURCES=	main.c \
 		memory.c \
-		screen.c
+		screen.c \
+		buffers.c
 
 ASSFILES=	main.s \
 		memory.s \
-		screen.s
+		screen.s \
+		buffers.s
 
 HEADERS=	Makefile \
 		memory.h \
-		screen.h
+		screen.h \
+		buffers.h
 
 M65IDE.D81:	$(FILES)
 	if [ -a M65IDE.D81 ]; then rm -f M65IDE.D81; fi
-	cbmconvert -v2 -D8o M65IDE.D81 $(FILES)
+	cbmconvert -v2 -D8o M65IDE.D81 $(FILES) $(M65IDESOURCES) $(HEADERS)
 
 opt65:	opt65.c
 	gcc -o opt65 opt65.c

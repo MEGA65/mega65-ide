@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "memory.h"
+#include "buffers.h"
 #include "screen.h"
 
 int main()
@@ -9,6 +10,7 @@ int main()
   POKE(0xd02fU,0x96);
   
   setup_screen();
+  initialise_buffers();
   
   return 0;
 }

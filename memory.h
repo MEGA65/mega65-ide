@@ -2,11 +2,10 @@
   Overall Memory layout:
 
   $00000-$003FF - C64 ZP, stack etc
-  $00400-$007FF -                               1KB UNUSED
+  $00400-$007FF - Meta-data for current open buffers
   $00800-$09FFF - M65IDE program
-  $0A000-$0B7FF -                               6KB unused (CC65 banks our BASIC)
-  $0B800-$0BFFF - 2KB screen RAM
-  $0C000-$0FFFF -                               16KB unused (some under IO/ROM)
+  $0A000-$0A7FF - 2KB screen RAM
+  $0A800-$0FFFF -                               22KB unused (some under IO/ROM)
   $10000-$11FFF - C65 DOS
   $12000-$1F7FF - 54KB RAM for buffers etc
   $1F800-$1FFFF - C65 2KB colour RAM for screen
@@ -18,6 +17,11 @@
   files being edited.
 
 */
+
+extern unsigned char buffer_memory_segment_count;
+extern long buffer_memory_segments[2];
+extern long buffer_memory_segment_lengths[2];
+extern long total_buffer_memory;
 
 unsigned char lpeek(long address);
 void lpoke(long address, unsigned char value);

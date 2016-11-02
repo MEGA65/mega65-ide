@@ -1,11 +1,13 @@
+#include "screen.h"
 #include "memory.h"
 
-#define FOOTER_COPYRIGHT 0
-#define FOOTER_BLANK 1
-#define FOOTER_MAX 1
-unsigned char *footer_messages[2]={
+unsigned char *footer_messages[6]={
   "MEGA65 IDE v00.01 : (C) Copyright 2016 Paul Gardner-Stephen etc.  CTRL-q to exit",
   "                                                                                "
+  "No more buffers.  Close a buffer and try again.                                 ",
+  "Out of memory. Closing buffers might help.                                      ",
+  "Buffer too large (too many lines, or 64KB limit reached)                        ",
+  "Line too long. Lines must be <255 characters in length.                         ",
 };
 unsigned char footers_initialised=0;
 
@@ -32,7 +34,7 @@ void display_footer(unsigned char index)
 
   if (!footers_initialised) initialise_footers();
   
-  lcopy(footer_messages[index],(0xb800U+24*80),80);
+  lcopy((long)footer_messages[index],(0xb800U+24*80),80);
   for(i=0;i<80;i++)
     POKE((0xb800U+24*80)+i,PEEK((0xb800U+24*80)+i)|0x80);
 }

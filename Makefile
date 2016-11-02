@@ -23,12 +23,13 @@ opt65:	opt65.c
 
 %.s:	%.c $(HEADERS) ./opt65
 	if [ -a temp.s ]; then rm -f temp.s; fi
-	$(CC65) $(COPT) -o temp.s $<
-	./opt65 temp.s > $@
+	$(CC65) $(COPTS) -o temp.s $<
+#	./opt65 temp.s > $@
+	cp temp.s $@
 	rm temp.s
 
 m65ide.prg:	$(ASSFILES)
-	$(CL65) $(COPT) -o m65ide.prg $(ASSFILES)
+	$(CL65) $(COPTS) -o m65ide.prg $(ASSFILES)
 
 clean:
 	rm -f M65IDE.D81 $(FILES)

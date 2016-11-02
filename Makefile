@@ -3,16 +3,20 @@ CC65=	/usr/local/bin/cc65
 CL65=	/usr/local/bin/cl65
 COPTS=	-t c64 -O -Or -Oi -Os
 
-FILES=		m65ide.prg
+FILES=		m65ide.prg \
+		autoboot.c65
 
 M65IDESOURCES=	main.c \
-		memory.c
+		memory.c \
+		screen.c
 
 ASSFILES=	main.s \
-		memory.s
+		memory.s \
+		screen.s
 
 HEADERS=	Makefile \
-		memory.h
+		memory.h \
+		screen.h
 
 M65IDE.D81:	$(FILES)
 	if [ -a M65IDE.D81 ]; then rm -f M65IDE.D81; fi

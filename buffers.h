@@ -24,7 +24,8 @@
 // Structure that describes a known buffer
 struct known_buffer {
   unsigned char filename[16]; // null if slot unused
-  unsigned int length;
+  unsigned int length; // used bytes
+  unsigned int allocated; // allocated bytes
 
   // Note that resident addresses are relative to "buffer memory", and are
   // NOT absolute addresses.
@@ -35,4 +36,7 @@ struct known_buffer {
 #define MAX_BUFFERS (1024/(sizeof (struct known_buffer)))
 
 void initialise_buffers(void);
-unsigned char buffer_allocate(unsigned char *name,long initial_size);
+unsigned char buffer_create(unsigned char *name);
+unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size);
+unsigned char buffer_load(unsigned char buffer_id);
+

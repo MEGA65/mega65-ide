@@ -2,8 +2,52 @@
 #include "buffers.h"
 #include "screen.h"
 
+long buffer_space_free=0;
+
 // Here is where buffers live
 struct known_buffer *buffers = (struct known_buffer *)0x0400U;
+
+void buffer_eject_from_memory(unsigned char bid)
+{
+  /* Eject the indicated buffer from memory.
+     This simply consists of zeroing the allocation and recalculating free-space,
+     unless the buffer is marked dirty, in which case we should save it to disk
+     (perhaps after asking the user?) */
+  
+}
+
+
+void buffer_eject_other(unsigned char but_not_this_one)
+{
+  /*
+    Eject a randomly selected buffer from memory and release its allocation.
+    Try to eject non-dirty buffers first.
+
+    XXX - Not at all random. We should make this random so that some buffers don't
+    always get ejected. Raster line is probably a fine random variable to use to select
+    the starting point in the buffer list.
+  */
+  unsigned char i,dirty;
+  for(dirty=0;dirty<2;dirty++) 
+    for(i=0;i<MAX_BUFFERS;i++)
+      if (i!=but_not_this_one) {
+	if (buffers[i].filename[0])
+	  if (buffers[i].dirty==dirty)
+	    if (buffers[i].resident_address_low||buffers[i].resident_address_high)
+	      {
+		// Here is a buffer that is not dirty, and is loaded into memory
+		buffer_eject_from_memory(i);
+		return;
+	      }
+      }
+  // Nothing we could free, so return anyway.
+}
+
+void buffers_calculate_freespace()
+{
+  /* Work out how much free space we have in buffer memory given the current
+     allocations. */
+}
 
 unsigned char buffer_create(unsigned char *name)
 {
@@ -20,9 +64,61 @@ unsigned char buffer_create(unsigned char *name)
 
   // Set file name in buffer
   f=buffers[i].filename;
-  for(j=0;name[j];j++) f[j]=name[j];
+  for(j=0;name[j]&&(j<16);j++) f[j]=name[j];
+  for(;j<16;j++) f[j]=0;
     
   return i;
+}
+
+unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size)
+{
+  /*
+    Allocate size bytes to the specified buffer.  This may cause other buffers to
+    be flushed to make space, and/or other buffers to be moved in buffer memory to
+    make space.
+  */
+
+  long difference = size - buffers[buffer_id].length;
+  if (difference < 0) {
+    // Trying to allocate buffer to below its used size.
+    return 0xff;
+  }
+  difference = size - buffers[buffer_id].allocated;
+  // Return if the request is moot.
+  if (difference == 0) return 0x00;
+  if (difference < 0) {
+    // Shrink allocation -- trivial
+
+    buffers[buffer_id].allocated = size;
+    buffer_space_free += difference;
+
+    return 0x00;
+  } else {
+    // Grow allocation
+
+    // Make space in RAM if required
+    while (difference > buffer_space_free) {
+      buffer_eject_other(buffer_id);
+    }
+
+    // For all buffers that start above the current one in memory, shift them
+    // out of the way if necessary.
+
+    // For all buffers that start below the current one in memory, shift them
+    // out of the way if necessary.
+
+    // Shift this buffer down if necessary.
+
+    // Finally update allocation information
+    difference = size - buffers[buffer_id].allocated;
+    buffers[buffer_id].allocated = size;
+    buffer_space_free -= difference;
+    return 0x00;
+  }
+}
+
+unsigned char buffer_load(unsigned char buffer_id)
+{
 }
 
 void initialise_buffers(void)
@@ -36,7 +132,12 @@ void initialise_buffers(void)
   total_buffer_memory=0;
   for(i=0;i<buffer_memory_segment_count;i++)
     total_buffer_memory+=buffer_memory_segment_lengths[i];
+  buffer_space_free=total_buffer_memory;
 
   // Allocate buffer that we will list all current buffers in
   buffer_create("*buffer-list*");
+
+  // For testing, try to load a buffer
+  i=buffer_create("memory.h");
+  buffer_load(i);
 }

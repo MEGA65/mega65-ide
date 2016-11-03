@@ -155,12 +155,14 @@ void initialise_buffers(void)
 }
 
 FILE *f=NULL;
-
-unsigned char string_loading[7]="Loading";
+FILE *savef=NULL;
+unsigned char string_loading[7]="Reading";
+unsigned char string_saving[8]="Flushing";
 unsigned char filename[2+16+1];
 unsigned char data_buffer[256];
 int r=0;
 unsigned int file_offset;
+unsigned int new_offset;
 
 unsigned char buffer_load(unsigned char buffer_id)
 {
@@ -182,8 +184,34 @@ unsigned char buffer_load(unsigned char buffer_id)
   while(!feof(f)) {
     r=fread(data_buffer,1,256,f);
     if (r>0) {
-      // Draw progress in footline (one > for every 2KB read)
+      new_offset=file_offset+r;
+      if (new_offset<file_offset) {
+	// File offset has wrapped around, i.e., file is >64KB
+	fclose(f);
+	buffer_allocate(buffer_id,0);
+	display_footer(FOOTER_BUFFERTOOBIG);
+	return 0xff;
+      }
+      // Allocate more space for buffer if required.
+      if (new_offset>buffers[buffer_id].allocated) {
+	// Preserve loading progress footer
+	// (buffer_allocate may flush another dirty buffer from memory)
+	footer_save();
+
+	// Make the allocation
+	if (buffer_allocate(buffer_id,new_offset)) {
+	  // Allocation failed.
+	  fclose(f);
+	  display_footer(FOOTER_OUTOFMEM);
+	  return 0xff;
+	}
+	footer_restore();
+      }
+
+      
       file_offset+=r;
+
+      // Draw progress in footline (one > for every 2KB read)
       *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))='>';
       ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS);
     }
@@ -192,6 +220,10 @@ unsigned char buffer_load(unsigned char buffer_id)
   return 0x00;
 }
 
+/*
+  Saving must use a separate file handle to loading, because loading a large buffer
+  may cause dirty buffers to be saved.
+*/
 unsigned char buffer_save(unsigned char buffer_id)
 {
 }

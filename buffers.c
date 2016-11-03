@@ -152,6 +152,13 @@ void initialise_buffers(void)
   // For testing, try to load a buffer
   i=buffer_create("memory.h");
   buffer_load(i);
+  i=buffer_create("memory.c");
+  buffer_load(i);
+  i=buffer_create("buffers.c");
+  buffer_load(i);
+  i=buffer_create("screen.c");
+  buffer_load(i);
+  display_footer(FOOTER_BLANK);
 }
 
 unsigned int count_this_segment;

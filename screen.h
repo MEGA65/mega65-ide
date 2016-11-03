@@ -16,6 +16,7 @@
 
 void setup_screen(void);
 void display_footer(unsigned char index);
+void mungedascii_to_screen_80(unsigned char *p, unsigned char bits);
 void ascii_to_screen_80(unsigned char *p, unsigned char bits);
 void footer_save(void);
 void footer_restore(void);

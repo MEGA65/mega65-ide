@@ -13,10 +13,25 @@ unsigned char *footer_messages[FOOTER_MAX+1]={
 };
 unsigned char footers_initialised=0;
 
-unsigned char ascii_to_screen(unsigned char in)
+unsigned char mungedascii_to_screen(unsigned char in)
 {
   if ((in>='A')&&(in<='Z')) return (in-0x00);
   if ((in>='a')&&(in<='z')) return (in-0x40);
+  return in;
+}
+
+void mungedascii_to_screen_80(unsigned char *p,unsigned char bits)
+{
+  int i;
+  for(i=0;i<80;i++) {
+    p[i]=mungedascii_to_screen(p[i])|bits;
+  }
+}
+
+unsigned char ascii_to_screen(unsigned char in)
+{
+  if ((in>='A')&&(in<='Z')) return (in-0x40);
+  if ((in>='a')&&(in<='z')) return (in-0x20);
   return in;
 }
 
@@ -33,7 +48,7 @@ void initialise_footers(void)
   unsigned char f;
   for(f=0;f<=FOOTER_MAX;f++) {
     unsigned char *p=footer_messages[f];
-    ascii_to_screen_80(p,REVERSE_VIDEO);
+    mungedascii_to_screen_80(p,REVERSE_VIDEO);
   }
 }
 

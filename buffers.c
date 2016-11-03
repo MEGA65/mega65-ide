@@ -250,15 +250,20 @@ unsigned char buffer_load(unsigned char buffer_id)
     r=fread(data_buffer,1,256,f);
     if (r>0) {
       new_offset=file_offset+r;
-      if ((new_offset<file_offset)||(new_offset=0xffff)) {
+      if ((new_offset<file_offset)||(new_offset==0xffff)) {
 	/* File offset is >65534, which is not allowed.
 	   (65535 is reserved for returning an error from functions
 	   that return the offset within a buffer) */       
 	fclose(f);
 	buffer_allocate(buffer_id,0);
 	display_footer(FOOTER_BUFFERTOOBIG);
+	
 	return 0xff;
       }
+
+      // Show hex file offset progress while loading
+      screen_hex(FOOTER_ADDRESS+74,file_offset);
+
       // Allocate more space for buffer if required.
       if (new_offset>buffers[buffer_id].allocated) {
 	// Preserve loading progress footer

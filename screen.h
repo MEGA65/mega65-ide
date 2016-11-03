@@ -21,3 +21,4 @@ void footer_save(void);
 void footer_restore(void);
 
 void screen_colour_line(unsigned char line,unsigned char colour);
+void screen_hex(unsigned int addr,long value);

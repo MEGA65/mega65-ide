@@ -44,7 +44,7 @@ void set_single_window(unsigned char bid)
 }
 
 unsigned char w,l;
-void draw_windows()
+void draw_windows(void)
 {
   c65_io_enable();
   
@@ -67,7 +67,10 @@ void draw_windows()
 	POKE(screen_line_address,'.');
 	lfill(screen_line_address+1,' ',79);
       } else {
+	// We have the line, so draw the appropriate segment in the appropriate place
 	lcopy((long)line_buffer+win->xoffset,(long)screen_line_address,80);
+	ascii_to_screen_80(screen_line_address,NORMAL_VIDEO);
+	screen_colour_line(l+1,14);
       }
     }
   }

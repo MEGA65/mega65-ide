@@ -12,6 +12,7 @@
 #define FOOTER_MAX 7
 
 #define REVERSE_VIDEO 0x80
+#define NORMAL_VIDEO 0x00
 
 void setup_screen(void);
 void display_footer(unsigned char index);

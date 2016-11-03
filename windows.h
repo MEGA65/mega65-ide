@@ -16,3 +16,4 @@ struct window {
 
 void initialise_windows(void);
 void set_single_window(unsigned char bid);
+void draw_windows(void);

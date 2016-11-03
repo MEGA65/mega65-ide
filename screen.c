@@ -18,13 +18,19 @@ unsigned char ascii_to_screen(unsigned char in)
   return in;
 }
 
+void ascii_to_screen_80(unsigned char *p)
+{
+  int i;
+  for(i=0;i<80;i++)
+    p[i]=ascii_to_screen(p[i])|0x80;
+}
+
 void initialise_footers(void)
 {
-  unsigned char i,f;
+  unsigned char f;
   for(f=0;f<=FOOTER_MAX;f++) {
     unsigned char *p=footer_messages[f];
-    for(i=0;i<80;i++)
-      p[i]=ascii_to_screen(p[i])|0x80;
+    ascii_to_screen_80(p);
   }
 }
 

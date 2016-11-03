@@ -155,6 +155,8 @@ void initialise_buffers(void)
 }
 
 FILE *f=NULL;
+
+unsigned char string_loading[7]="Loading";
 unsigned char filename[2+16+1];
 unsigned char data_buffer[256];
 int r=0;
@@ -167,6 +169,12 @@ unsigned char buffer_load(unsigned char buffer_id)
   lcopy((long)buffers[buffer_id].filename,(long)filename,16);
 
   file_offset=0;
+
+  display_footer(FOOTER_BLANK);
+  lcopy((long)string_loading,FOOTER_ADDRESS,7);
+  for(r=0;filename[r];r++) *(unsigned char *)(FOOTER_ADDRESS+7+1+r)=filename[r];
+    
+  ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS);
   
   f=fopen(filename,"r");
   if (!f) return 0xff;
@@ -174,9 +182,10 @@ unsigned char buffer_load(unsigned char buffer_id)
   while(!feof(f)) {
     r=fread(data_buffer,1,256,f);
     if (r>0) {
-      // Draw progress in footline
+      // Draw progress in footline (one > for every 2KB read)
       file_offset+=r;
-      *(unsigned char *)(SCREEN_ADDRESS+(24*80)+(file_offset>>10))=file_offset>>8;
+      *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))='>';
+      ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS);
     }
   }
   fclose(f);

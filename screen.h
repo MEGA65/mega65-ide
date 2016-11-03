@@ -11,4 +11,4 @@
 
 void setup_screen(void);
 void display_footer(unsigned char index);
-
+void ascii_to_screen_80(unsigned char *p);

@@ -23,3 +23,5 @@ void footer_restore(void);
 
 void screen_colour_line(unsigned char line,unsigned char colour);
 void screen_hex(unsigned int addr,long value);
+
+#define screen_colour_line_segment(LA,W,C) lfill(LA+(0x1f800-SCREEN_ADDRESS),C,W)

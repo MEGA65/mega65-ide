@@ -63,14 +63,15 @@ void draw_windows(void)
       screen_line_address+=80;
       if (line_fetch(win->bid,win->first_line+l)) {
 	// Error fetching line -- draw as black line with blue full-stop in left column
-	screen_colour_line(l+1,0);
-	POKE(screen_line_address,'.');
-	lfill(screen_line_address+1,' ',79);
+	screen_colour_line_segment(screen_line_address+win->x,win->width-1,0);
+	POKE(screen_line_address+win->x,'.');
+	lfill(screen_line_address+win->x+1,' ',win->width-2);
       } else {
 	// We have the line, so draw the appropriate segment in the appropriate place
-	lcopy((long)line_buffer+win->xoffset,(long)screen_line_address,80);
-	ascii_to_screen_80(screen_line_address,NORMAL_VIDEO);
-	screen_colour_line(l+1,14);
+	lcopy((long)line_buffer+win->xoffset,
+	      (long)screen_line_address+win->x,win->width-1);
+	ascii_to_screen_80(screen_line_address+win->x,NORMAL_VIDEO);
+	screen_colour_line_segment(screen_line_address+win->x,win->width-1,14);
       }
     }
   }

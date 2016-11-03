@@ -1,7 +1,7 @@
 #include "screen.h"
 #include "memory.h"
 
-unsigned char *footer_messages[6]={
+unsigned char *footer_messages[FOOTER_MAX+1]={
   "MEGA65 IDE v00.01 : (C) Copyright 2016 Paul Gardner-Stephen etc.  CTRL-q to exit",
   "                                                                                "
   "No more buffers.  Close a buffer and try again.                                 ",

@@ -20,11 +20,11 @@ unsigned char ascii_to_screen(unsigned char in)
   return in;
 }
 
-void ascii_to_screen_80(unsigned char *p)
+void ascii_to_screen_80(unsigned char *p,unsigned char bits)
 {
   int i;
   for(i=0;i<80;i++)
-    p[i]=ascii_to_screen(p[i])|0x80;
+    p[i]=ascii_to_screen(p[i])|bits;
 }
 
 void initialise_footers(void)
@@ -32,7 +32,7 @@ void initialise_footers(void)
   unsigned char f;
   for(f=0;f<=FOOTER_MAX;f++) {
     unsigned char *p=footer_messages[f];
-    ascii_to_screen_80(p);
+    ascii_to_screen_80(p,REVERSE_VIDEO);
   }
 }
 
@@ -85,6 +85,12 @@ void setup_screen(void)
   // Clear colour RAM: white text
   lfill(0x1f800,0x01,2000);
 
-  display_footer(FOOTER_COPYRIGHT);
-  
+  display_footer(FOOTER_COPYRIGHT);    
+}
+
+void screen_colour_line(unsigned char line,unsigned char colour)
+{
+  // Set colour RAM for this screen line to this colour
+  // (use bit-shifting as fast alternative to multiply)
+  lfill(0x1f800+(line<<6)+(line<<4),colour,80);
 }

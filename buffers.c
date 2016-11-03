@@ -234,7 +234,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   lcopy((long)string_loading,FOOTER_ADDRESS,7);
   for(r=0;filename[r];r++) *(unsigned char *)(FOOTER_ADDRESS+7+1+r)=filename[r];
     
-  ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS);
+  ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS,REVERSE_VIDEO);
   
   f=fopen(filename,"r");
   if (!f) return 0xff;
@@ -275,7 +275,7 @@ unsigned char buffer_load(unsigned char buffer_id)
 
       // Draw progress in footline (one > for every 2KB read)
       *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))='>';
-      ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS);
+      ascii_to_screen_80((unsigned char *)FOOTER_ADDRESS,REVERSE_VIDEO);
     }
   }
   fclose(f);

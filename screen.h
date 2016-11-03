@@ -11,8 +11,12 @@
 #define FOOTER_DISKERROR 7
 #define FOOTER_MAX 7
 
+#define REVERSE_VIDEO 0x80
+
 void setup_screen(void);
 void display_footer(unsigned char index);
-void ascii_to_screen_80(unsigned char *p);
+void ascii_to_screen_80(unsigned char *p, unsigned char bits);
 void footer_save(void);
 void footer_restore(void);
+
+void screen_colour_line(unsigned char line,unsigned char colour);

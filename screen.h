@@ -8,6 +8,7 @@
 #define FOOTER_BUFFERTOOBIG 4
 #define FOOTER_LINETOOLONG 5
 #define FOOTER_FATAL 6
+#define FOOTER_DISKERROR 7
 #define FOOTER_MAX 7
 
 void setup_screen(void);

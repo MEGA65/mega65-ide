@@ -9,6 +9,7 @@ unsigned char *footer_messages[FOOTER_MAX+1]={
   "Buffer too large (too many lines, or 64KB limit reached)                        ",
   "Line too long. Lines must be <255 characters in length.                         ",
   "Fatal error: Something horrible has happened to memory. Probably a bug.         ",
+  "Disk error. Could not read/write buffer or other thing to/from disk.            "
 };
 unsigned char footers_initialised=0;
 
@@ -37,8 +38,6 @@ void initialise_footers(void)
 
 void display_footer(unsigned char index)
 {  
-  unsigned char i;
-
   if (!footers_initialised) initialise_footers();
   
   lcopy((long)footer_messages[index],FOOTER_ADDRESS,80);

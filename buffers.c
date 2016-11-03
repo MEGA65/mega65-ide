@@ -288,6 +288,7 @@ unsigned char buffer_load(unsigned char buffer_id)
     }
   }
   fclose(f);
+  buffers[buffer_id].length=file_offset;
   buffers[buffer_id].loaded=1;
 
   return 0x00;

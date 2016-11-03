@@ -34,9 +34,7 @@ void display_footer(unsigned char index)
 
   if (!footers_initialised) initialise_footers();
   
-  lcopy((long)footer_messages[index],(0xb800U+24*80),80);
-  for(i=0;i<80;i++)
-    POKE((0xb800U+24*80)+i,PEEK((0xb800U+24*80)+i)|0x80);
+  lcopy((long)footer_messages[index],(SCREEN_ADDRESS+24*80),80);
 }
 
 void setup_screen(void)
@@ -47,9 +45,10 @@ void setup_screen(void)
   *((unsigned char*)0xD031)=0xe0;
 
   // Put screen memory somewhere (2KB required)
-  // We are using $B800-$BFFF for now
+  // We are using $A000-$A7FF for now
   // and use lower-case char set
-  *(unsigned char *)0xD018U=0xE6;
+  *(unsigned char *)0xD018U=0x06+(((SCREEN_ADDRESS-0x8000U)>>10)<<4);
+  
 
   // VIC RAM Bank to $C000-$FFFF
   v=*(unsigned char *)0xDD00U;
@@ -62,7 +61,7 @@ void setup_screen(void)
   POKE(0xD021U,6);
 
   // Clear screen RAM
-  lfill(0x0b800,0x20,2000);
+  lfill(SCREEN_ADDRESS,0x20,2000);
 
   // Clear colour RAM: white text
   lfill(0x1f800,0x01,2000);

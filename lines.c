@@ -29,11 +29,12 @@
 #include "screen.h"
 
 // Buffer for currently retrieved line
-unsigned char line_buffer_bid=0xff;
+unsigned char line_buffer_buffer_id=0xff;
 unsigned int line_buffer_line_number=0xffff;
 unsigned char line_buffer[255];
 unsigned char line_buffer_length=0;
 unsigned char line_buffer_original_length=0;
+unsigned char line_buffer_dirty=0;
 
 unsigned char line_search_buffer[255];
 unsigned char line_search_buffer_bytes;
@@ -100,6 +101,11 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
     display_footer(FOOTER_LINETOOLONG);
     return 0xff;
   }  
+
+  // We have the line, so set appropriate information
+  line_buffer_line_number=line_number;
+  line_buffer_buffer_id=buffer_id;
+  line_buffer_dirty=0;
   
   // Remember original length of line, so that it can be used for easier writing-back
   // of modified lines.

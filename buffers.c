@@ -6,7 +6,7 @@
 long buffer_space_free=0;
 
 // Here is where buffers live
-struct known_buffer *buffers = (struct known_buffer *)0x0400U;
+struct known_buffer *buffers = (struct known_buffer *)BUFFER_LIST_BASE;
 
 void buffer_eject_from_memory(unsigned char bid)
 {
@@ -15,14 +15,23 @@ void buffer_eject_from_memory(unsigned char bid)
      unless the buffer is marked dirty, in which case we should save it to disk
      (perhaps after asking the user?) */
   if (buffers[bid].dirty) {
-    buffer_save(bid);
+    if (buffer_save(bid)) {
+      display_footer(FOOTER_DISKERROR);
+      return;
+    }
   }
-  // Zero buffer entry
-  lfill((long)&buffers[bid],0,sizeof (struct known_buffer));
+  buffers[bid].loaded=0;
+
   // Recalculate free space, so that we can't accumulate calculation errors
   buffers_calculate_freespace();
 }
 
+// Destroy buffer without first trying to save to disk!
+void buffer_destroy(unsigned char bid)
+{  
+  // Zero buffer entry
+  lfill((long)&buffers[bid],0,sizeof (struct known_buffer));
+}
 
 void buffer_eject_other(unsigned char but_not_this_one)
 {
@@ -213,6 +222,8 @@ unsigned int new_offset;
 
 unsigned char buffer_load(unsigned char buffer_id)
 {
+  buffers[buffer_id].loaded=0;
+  
   // Initialise null-terminated filename
   lfill((long)filename,0,sizeof filename);
   lcopy((long)buffers[buffer_id].filename,(long)filename,16);
@@ -232,8 +243,10 @@ unsigned char buffer_load(unsigned char buffer_id)
     r=fread(data_buffer,1,256,f);
     if (r>0) {
       new_offset=file_offset+r;
-      if (new_offset<file_offset) {
-	// File offset has wrapped around, i.e., file is >64KB
+      if ((new_offset<file_offset)||(new_offset=0xffff)) {
+	/* File offset is >65534, which is not allowed.
+	   (65535 is reserved for returning an error from functions
+	   that return the offset within a buffer) */       
 	fclose(f);
 	buffer_allocate(buffer_id,0);
 	display_footer(FOOTER_BUFFERTOOBIG);
@@ -266,6 +279,8 @@ unsigned char buffer_load(unsigned char buffer_id)
     }
   }
   fclose(f);
+  buffers[buffer_id].loaded=1;
+
   return 0x00;
 }
 
@@ -275,5 +290,9 @@ unsigned char buffer_load(unsigned char buffer_id)
 */
 unsigned char buffer_save(unsigned char buffer_id)
 {
+  // XXX - actually save the buffer!
+  
+  buffers[buffer_id].dirty=0;
+  return 0xff;
 }
 

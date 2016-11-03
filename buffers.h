@@ -8,16 +8,20 @@
   It is nice to allow for a fairly long list of open buffers, so that relatively
   complex projects can be edited in the IDE.
 
-  Current design Limitations etc:
+Comments regarding current design:
 
   1. All buffer context must fit in 1KB of RAM ($0400-$07FF). This limits us to about
      45 open buffers at this point in time.
-  2. Each buffer is limited to 64KB in size. Total size of all loaded buffers is also
-     limited by available memory.  We currently expect to have about 70KB total for
-     loaded buffers (or less if I get around to adding undo support).
-  3. Filenames can be only upto 16 characters (only an issue for M65 native file system
+  2. Each buffer is limited to 65534 bytes in length. Total size of all loaded buffers
+     is also limited by available memory.  We currently expect to have about 70KB 
+     total for loaded buffers (or less if I get around to adding undo support).
+     (But note that buffers are automatically unloaded to make room for others, so
+      you can be editing more than 70KB of buffers in total at any point in time).
+  3. Lines are limited to 254 bytes in length. Files with longer lines will cause
+     "line too long" errors.
+  4. Filenames can be only upto 16 characters (only an issue for M65 native file system
      when it is available).
-  4. Copy-paste will probably be implemented using a designated *copybuffer* buffer.
+  5. Copy-paste will probably be implemented using a designated *copybuffer* buffer.
 
 */
 
@@ -32,8 +36,12 @@ struct known_buffer {
   unsigned int resident_address_low ; // or 0 if not currently in memory
   unsigned char resident_address_high; // bits 16-23 of resident address  
   unsigned int dirty : 1 ; // indicates if buffer requires saving to disk
+  unsigned int loaded : 1; // indicates if buffer currently in RAM
 };
-#define MAX_BUFFERS (1024/(sizeof (struct known_buffer)))
+#define BUFFER_LIST_BASE 0x032cU
+#define BUFFER_LIST_TOP 0x07ffU
+#define BUFFER_LIST_BYTES (BUFFER_LIST_TOP-BUFFER_LIST_BASE+1)
+#define MAX_BUFFERS (BUFFER_LIST_BYTES/(sizeof (struct known_buffer)))
 
 extern struct known_buffer *buffers;
 

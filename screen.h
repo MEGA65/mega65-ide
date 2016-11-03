@@ -7,8 +7,10 @@
 #define FOOTER_OUTOFMEM 3
 #define FOOTER_BUFFERTOOBIG 4
 #define FOOTER_LINETOOLONG 5
-#define FOOTER_MAX 5
+#define FOOTER_MAX 6
 
 void setup_screen(void);
 void display_footer(unsigned char index);
 void ascii_to_screen_80(unsigned char *p);
+void footer_save(void);
+void footer_restore(void);

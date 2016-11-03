@@ -43,6 +43,17 @@ void display_footer(unsigned char index)
   lcopy((long)footer_messages[index],FOOTER_ADDRESS,80);
 }
 
+unsigned char saved_footer_buffer[80];
+void footer_save(void)
+{
+  lcopy((long)FOOTER_ADDRESS,(long)saved_footer_buffer,80);
+}
+
+void footer_restore(void)
+{
+  lcopy((long)saved_footer_buffer,(long)FOOTER_ADDRESS,80);
+}
+
 void setup_screen(void)
 {
   unsigned char v;

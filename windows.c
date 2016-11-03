@@ -61,7 +61,7 @@ void draw_windows(void)
     // Draw 23 lines from file
     for(l=0;l<23;l++) {
       screen_line_address+=80;
-      if (line_fetch(win->bid,win->first_line)) {
+      if (1) { // line_fetch(win->bid,win->first_line)) {
 	// Error fetching line -- draw as black line with blue full-stop in left column
 	screen_colour_line(l+1,0);
 	POKE(screen_line_address,'.');

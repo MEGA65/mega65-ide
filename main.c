@@ -7,8 +7,8 @@
 int main()
 {  
   setup_screen();
-  initialise_buffers();
   initialise_windows();
- 
+  initialise_buffers();
+
   return 0;
 }

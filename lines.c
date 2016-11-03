@@ -49,6 +49,10 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       display_footer(FOOTER_DISKERROR);
       return 0xffff;
     }
+  if (!buffers[buffer_id].loaded) {
+    display_footer(FOOTER_FATAL);
+    for(;;) continue;
+  }
 
   // Start from the beginning of the buffer, and search forward.
   line_offset_in_buffer=0;
@@ -66,6 +70,10 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       if (space_remaining<255) c=space_remaining; else c=255;
       buffer_get_bytes(buffer_id,line_offset_in_buffer,c,line_search_buffer);
     }
+
+
+
+    
     if (line_search_buffer_offset>=line_search_buffer_bytes) {
       display_footer(FOOTER_FATAL);
       for(;;) continue;
@@ -92,6 +100,10 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
   // Read it into the buffer
   buffer_get_bytes(buffer_id,line_offset_in_buffer,255,line_buffer);
 
+  POKE(SCREEN_ADDRESS+0,line_offset_in_buffer&0xff);
+  POKE(SCREEN_ADDRESS+1,line_offset_in_buffer>>8);
+  
+  
   for(line_buffer_length=0;
       (line_buffer_length<0xff)
 	&&(line_buffer[line_buffer_length]!='\r')
@@ -100,12 +112,15 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
   if (line_buffer_length==0xff) {
     display_footer(FOOTER_LINETOOLONG);
     return 0xff;
-  }  
+  }
 
   // We have the line, so set appropriate information
   line_buffer_line_number=line_number;
   line_buffer_buffer_id=buffer_id;
   line_buffer_dirty=0;
+
+  // Fill past end of line in buffer with spaces for display convenience
+  lfill((long)line_buffer+line_buffer_length,' ',255-line_buffer_length);  
   
   // Remember original length of line, so that it can be used for easier writing-back
   // of modified lines.

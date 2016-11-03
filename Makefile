@@ -42,7 +42,7 @@ opt65:	opt65.c
 	rm temp.s
 
 m65ide.prg:	$(ASSFILES)
-	$(CL65) $(COPTS) -o m65ide.prg $(ASSFILES)
+	$(CL65) $(COPTS) -vm -m m65ide.map -o m65ide.prg $(ASSFILES)
 
 clean:
 	rm -f M65IDE.D81 $(FILES)

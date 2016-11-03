@@ -3,10 +3,10 @@
 
 unsigned char *footer_messages[FOOTER_MAX+1]={
   "MEGA65 IDE v00.01 : (C) Copyright 2016 Paul Gardner-Stephen etc.  CTRL-q to exit",
-  "                                                                                "
+  "                                                                                ",
   "No more buffers.  Close a buffer and try again.                                 ",
   "Out of memory. Closing buffers might help.                                      ",
-  "Buffer too large (too many lines, or 64KB limit reached)                        ",
+  "Buffer too large (must be <65535 bytes).                                        ",
   "Line too long. Lines must be <255 characters in length.                         ",
   "Fatal error: Something horrible has happened to memory. Probably a bug.         ",
   "Disk error. Could not read/write buffer or other thing to/from disk.            "
@@ -23,8 +23,9 @@ unsigned char ascii_to_screen(unsigned char in)
 void ascii_to_screen_80(unsigned char *p,unsigned char bits)
 {
   int i;
-  for(i=0;i<80;i++)
+  for(i=0;i<80;i++) {
     p[i]=ascii_to_screen(p[i])|bits;
+  }
 }
 
 void initialise_footers(void)
@@ -36,11 +37,31 @@ void initialise_footers(void)
   }
 }
 
+unsigned char screen_hex_digits[16]={
+  '0','1','2','3','4','5',
+  '6','7','8','9',1,2,3,4,5,6};
+unsigned char to_screen_hex(unsigned char c)
+{
+  return screen_hex_digits[c&0xf];
+}
+
+void screen_hex(unsigned int addr,long value)
+{
+  POKE(addr+0,to_screen_hex(value>>20));
+  POKE(addr+1,to_screen_hex(value>>16));
+  POKE(addr+2,to_screen_hex(value>>12));
+  POKE(addr+3,to_screen_hex(value>>8));
+  POKE(addr+4,to_screen_hex(value>>4));
+  POKE(addr+5,to_screen_hex(value>>0));
+}
+
+long addr;
 void display_footer(unsigned char index)
 {  
   if (!footers_initialised) initialise_footers();
-  
-  lcopy((long)footer_messages[index],FOOTER_ADDRESS,80);
+
+  addr=(long)footer_messages[index];  
+  lcopy(addr,FOOTER_ADDRESS,80);  
 }
 
 unsigned char saved_footer_buffer[80];

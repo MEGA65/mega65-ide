@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "buffers.h"
 #include "screen.h"
+#include "windows.h"
 
 long buffer_space_free=0;
 
@@ -161,13 +162,19 @@ void initialise_buffers(void)
   // For testing, try to load a buffer
   i=buffer_create("memory.h");
   buffer_load(i);
+#if 0
   i=buffer_create("memory.c");
   buffer_load(i);
   i=buffer_create("buffers.c");
   buffer_load(i);
+
+  // set_single_window(i);
+  //  draw_windows();
+  
   i=buffer_create("screen.c");
   buffer_load(i);
-  display_footer(FOOTER_BLANK);
+#endif
+
 }
 
 unsigned int count_this_segment;

@@ -28,14 +28,27 @@
 #include "buffers.h"
 #include "screen.h"
 
+// Buffer for currently retrieved line
+unsigned char line_buffer_bid=0xff;
+unsigned int line_buffer_line_number=0xffff;
+unsigned char line_buffer[255];
+unsigned char line_buffer_length=0;
+unsigned char line_buffer_original_length=0;
+
 unsigned char line_search_buffer[255];
 unsigned char line_search_buffer_bytes;
 unsigned char line_search_buffer_offset;
 unsigned int line_offset_in_buffer,space_remaining;
 unsigned char c;
 
-unsigned char line_find(unsigned char buffer_id, unsigned int line_number)
+unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
 {
+  if (!buffers[buffer_id].loaded)
+    if (buffer_load(buffer_id)) {
+      display_footer(FOOTER_DISKERROR);
+      return 0xffff;
+    }
+
   // Start from the beginning of the buffer, and search forward.
   line_offset_in_buffer=0;
   line_search_buffer_offset=255;
@@ -66,4 +79,30 @@ unsigned char line_find(unsigned char buffer_id, unsigned int line_number)
     }
   }
   if (!line_number) return line_offset_in_buffer;
+}
+
+unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)  
+{
+  // Find the line in the buffer
+  // XXX - Speed up with line offset cache of some sort
+  line_offset_in_buffer=line_find_offset(buffer_id,line_number);
+  if (line_offset_in_buffer==0xffff) return 0xff;
+
+  // Read it into the buffer
+  buffer_get_bytes(buffer_id,line_offset_in_buffer,255,line_buffer);
+
+  for(line_buffer_length=0;
+      (line_buffer_length<0xff)
+	&&(line_buffer[line_buffer_length]!='\r')
+	&&(line_buffer[line_buffer_length]!='\n');line_buffer_length++)
+    continue;
+  if (line_buffer_length==0xff) {
+    display_footer(FOOTER_LINETOOLONG);
+    return 0xff;
+  }  
+  
+  // Remember original length of line, so that it can be used for easier writing-back
+  // of modified lines.
+  line_buffer_original_length=line_buffer_length;
+  return 0x00;
 }

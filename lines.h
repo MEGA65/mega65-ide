@@ -1,1 +1,1 @@
-unsigned char line_find(unsigned char buffer_id, unsigned int line_number);
+unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number);

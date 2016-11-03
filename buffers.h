@@ -35,6 +35,8 @@ struct known_buffer {
 };
 #define MAX_BUFFERS (1024/(sizeof (struct known_buffer)))
 
+extern struct known_buffer *buffers;
+
 void initialise_buffers(void);
 unsigned char buffer_create(unsigned char *name);
 unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size);

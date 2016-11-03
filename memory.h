@@ -23,6 +23,9 @@ extern long buffer_memory_segments[2];
 extern long buffer_memory_segment_lengths[2];
 extern long total_buffer_memory;
 
+long buffer_address_to_real(long buffer_address);
+unsigned int buffer_address_contiguous_bytes(long buffer_address);
+
 unsigned char lpeek(long address);
 void lpoke(long address, unsigned char value);
 void lcopy(long source_address, long destination_address,

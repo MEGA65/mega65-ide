@@ -13,6 +13,33 @@ long buffer_memory_segment_lengths[2]={(0x10000-0xa800),
 				       (0x1f800-0x12000)};  
 long total_buffer_memory;
 
+
+// Convert an offset in the buffer space to its physical address
+unsigned char i;
+long buffer_address_to_real(long buffer_address)
+{
+  for(i=0;i<buffer_memory_segment_count;i++) {
+    if (buffer_address < buffer_memory_segment_lengths[i])
+      return buffer_memory_segments[i]+buffer_address;
+    else buffer_address -= buffer_memory_segment_lengths[i];
+  }
+  // Invalid address
+  return 0;
+}
+
+// How many contiguous bytes are there in buffer space at this location?
+unsigned int buffer_address_contiguous_bytes(long buffer_address)
+{
+  for(i=0;i<buffer_memory_segment_count;i++) {
+    if (buffer_address < buffer_memory_segment_lengths[i])
+      return buffer_memory_segment_lengths[i]-buffer_address;
+    else buffer_address -= buffer_memory_segment_lengths[i];
+  }
+  // Invalid address
+  return 0;
+}
+
+
 struct dmagic_dmalist {
   unsigned char command;
   unsigned int count;

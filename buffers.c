@@ -175,7 +175,8 @@ unsigned char buffer_load(unsigned char buffer_id)
     r=fread(data_buffer,1,256,f);
     if (r>0) {
       // Draw progress in footline
-      *(unsigned char *)(0xa000+(24*80)+(file_offset>>10))=r;
+      file_offset+=r;
+      *(unsigned char *)(SCREEN_ADDRESS+(24*80)+(file_offset>>10))=file_offset>>8;
     }
   }
   fclose(f);

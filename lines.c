@@ -50,7 +50,7 @@ unsigned char line_find(unsigned char buffer_id, unsigned int line_number)
       // We need to read some more bytes from the buffer to search
       space_remaining=buffers[buffer_id].length-line_offset_in_buffer;
       if (space_remaining<255) c=space_remaining; else c=255;
-      buffer_get_bytes(buffer_id,line_offset_in_buffer,c,line_search_buffer);      
+      buffer_get_bytes(buffer_id,line_offset_in_buffer,c,line_search_buffer);
     }
     if (line_search_buffer_offset>=line_search_buffer_bytes) {
       display_footer(FOOTER_FATAL);

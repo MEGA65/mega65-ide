@@ -46,8 +46,8 @@ void buffer_eject_from_memory(unsigned char bid);
 void buffer_eject_other(unsigned char but_not_this_one);
 unsigned char buffer_save(unsigned char bid);
 unsigned char buffer_load(unsigned char bid);
-void buffer_get_bytes(unsigned char buffer_id,unsigned int offset, unsigned int count,
-		      unsigned char *data);
-void buffer_set_bytes(unsigned char buffer_id,unsigned int offset, unsigned int count,
-		      unsigned char *data);
+void buffer_getset_bytes(unsigned char buffer_id,unsigned int offset, unsigned int count,
+			 unsigned char *data, unsigned char getP);
+#define buffer_set_bytes(A,B,C,D) buffer_getset_bytes(A,B,C,D,0)
+#define buffer_get_bytes(A,B,C,D) buffer_getset_bytes(A,B,C,D,1)
 

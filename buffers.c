@@ -154,6 +154,36 @@ void initialise_buffers(void)
   buffer_load(i);
 }
 
+unsigned int count_this_segment;
+long buffer_memory_offset;
+long real_memory_offset;
+void buffer_set_bytes(unsigned char buffer_id,unsigned int offset, unsigned int count,
+		      unsigned char *data)
+{
+  while(count) {
+    // Work out where in the buffer memory space we need to put the next byte
+    buffer_memory_offset = buffers[buffer_id].resident_address_low;
+    buffer_memory_offset |= ((long)buffers[buffer_id].resident_address_high)<<16;
+    buffer_memory_offset += offset;
+
+    // Now work out where that is in real memory
+    real_memory_offset = buffer_address_to_real(buffer_memory_offset);
+
+    // And how many bytes we can contigously write
+    count_this_segment = buffer_address_contiguous_bytes(buffer_memory_offset);
+    if (count_this_segment > count) count_this_segment = count;
+
+    // Copy the bytes
+    lcopy((long)data,real_memory_offset,count_this_segment);
+
+    // See what is left, and update pointers to data, so that data can be copied
+    // over buffer segment boundaries.
+    offset+= count_this_segment;
+    count -= count_this_segment;
+    data += count_this_segment;
+  }
+}
+
 FILE *f=NULL;
 FILE *savef=NULL;
 unsigned char string_loading[7]="Reading";
@@ -208,6 +238,8 @@ unsigned char buffer_load(unsigned char buffer_id)
 	footer_restore();
       }
 
+      // Write bytes to buffer
+      buffer_set_bytes(buffer_id,file_offset,r,data_buffer);
       
       file_offset+=r;
 

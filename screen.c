@@ -34,7 +34,7 @@ void display_footer(unsigned char index)
 
   if (!footers_initialised) initialise_footers();
   
-  lcopy((long)footer_messages[index],(SCREEN_ADDRESS+24*80),80);
+  lcopy((long)footer_messages[index],FOOTER_ADDRESS,80);
 }
 
 void setup_screen(void)

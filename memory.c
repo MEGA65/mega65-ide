@@ -55,6 +55,8 @@ unsigned char dma_byte;
 
 void do_dma(void)
 {
+  c65_io_enable();
+
 #ifdef MEGA65
   // Now run DMA job (to and from low 1MB, and list is in low 1MB)
   POKE(0xd702U,0);
@@ -123,4 +125,10 @@ void lfill(long destination_address, unsigned char value,
 
   do_dma();
   return;
+}
+
+void c65_io_enable(void)
+{
+  POKE(0xd02fU,0xA5);
+  POKE(0xd02fU,0x96);
 }

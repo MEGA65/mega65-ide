@@ -58,6 +58,8 @@ void footer_restore(void)
 void setup_screen(void)
 {
   unsigned char v;
+
+  c65_io_enable();
   
   // 80-column mode, fast CPU, extended attributes enable
   *((unsigned char*)0xD031)=0xe0;

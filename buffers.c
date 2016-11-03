@@ -159,8 +159,9 @@ long buffer_memory_offset;
 long real_memory_offset;
 void buffer_set_bytes(unsigned char buffer_id,unsigned int offset, unsigned int count,
 		      unsigned char *data)
-{
+{  
   while(count) {
+    
     // Work out where in the buffer memory space we need to put the next byte
     buffer_memory_offset = buffers[buffer_id].resident_address_low;
     buffer_memory_offset |= ((long)buffers[buffer_id].resident_address_high)<<16;
@@ -169,6 +170,12 @@ void buffer_set_bytes(unsigned char buffer_id,unsigned int offset, unsigned int 
     // Now work out where that is in real memory
     real_memory_offset = buffer_address_to_real(buffer_memory_offset);
 
+    if (!real_memory_offset) {
+      // Something bad has happened.
+      display_footer(FOOTER_FATAL);
+      for(;;) continue;
+    }
+    
     // And how many bytes we can contigously write
     count_this_segment = buffer_address_contiguous_bytes(buffer_memory_offset);
     if (count_this_segment > count) count_this_segment = count;

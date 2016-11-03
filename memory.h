@@ -26,6 +26,7 @@ extern long total_buffer_memory;
 long buffer_address_to_real(long buffer_address);
 unsigned int buffer_address_contiguous_bytes(long buffer_address);
 
+void c65_io_enable(void);
 unsigned char lpeek(long address);
 void lpoke(long address, unsigned char value);
 void lcopy(long source_address, long destination_address,

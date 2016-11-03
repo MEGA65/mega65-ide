@@ -8,6 +8,7 @@ unsigned char *footer_messages[FOOTER_MAX+1]={
   "Out of memory. Closing buffers might help.                                      ",
   "Buffer too large (too many lines, or 64KB limit reached)                        ",
   "Line too long. Lines must be <255 characters in length.                         ",
+  "Fatal error: Something horrible has happened to memory. Probably a bug.         ",
 };
 unsigned char footers_initialised=0;
 

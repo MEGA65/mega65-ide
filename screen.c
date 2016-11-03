@@ -22,9 +22,9 @@ unsigned char mungedascii_to_screen(unsigned char in)
   return in;
 }
 
+unsigned char i;
 void mungedascii_to_screen_80(unsigned char *p,unsigned char bits)
 {
-  int i;
   for(i=0;i<80;i++) {
     p[i]=mungedascii_to_screen(p[i])|bits;
   }
@@ -36,15 +36,19 @@ unsigned char ascii_to_screen(unsigned char in)
   return in;
 }
 
-void ascii_to_screen_80(unsigned char *p,unsigned char bits)
+void ascii_to_screen_segment(unsigned char *p,unsigned char count,unsigned char bits)
 {
-  int i;
-  screen_hex(SCREEN_ADDRESS,(long)p);
   
-  for(i=0;i<80;i++) {
+  for(i=0;i<count;i++) {
     p[i]=ascii_to_screen(p[i])|bits;
   }
 }
+
+void ascii_to_screen_80(unsigned char *p,unsigned char bits)
+{
+  ascii_to_screen_segment(p,80,bits);
+}
+
 
 void initialise_footers(void)
 {

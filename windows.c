@@ -70,7 +70,7 @@ void draw_windows(void)
 	// We have the line, so draw the appropriate segment in the appropriate place
 	lcopy((long)line_buffer+win->xoffset,
 	      (long)screen_line_address+win->x,win->width-1);
-	ascii_to_screen_80(screen_line_address+win->x,NORMAL_VIDEO);
+	ascii_to_screen_segment(screen_line_address+win->x,win->width,NORMAL_VIDEO);
 	screen_colour_line_segment(screen_line_address+win->x,win->width-1,14);
       }
     }

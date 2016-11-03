@@ -15,13 +15,16 @@
 #define NORMAL_VIDEO 0x00
 
 void setup_screen(void);
+
 void display_footer(unsigned char index);
-void mungedascii_to_screen_80(unsigned char *p, unsigned char bits);
-void ascii_to_screen_80(unsigned char *p, unsigned char bits);
 void footer_save(void);
 void footer_restore(void);
 
-void screen_colour_line(unsigned char line,unsigned char colour);
-void screen_hex(unsigned int addr,long value);
+void mungedascii_to_screen_80(unsigned char *p, unsigned char bits);
+void ascii_to_screen_80(unsigned char *p, unsigned char bits);
+void ascii_to_screen_segment(unsigned char *p,unsigned char count,unsigned char bits);
 
+void screen_colour_line(unsigned char line,unsigned char colour);
 #define screen_colour_line_segment(LA,W,C) lfill(LA+(0x1f800-SCREEN_ADDRESS),C,W)
+
+void screen_hex(unsigned int addr,long value);

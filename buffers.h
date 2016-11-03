@@ -39,4 +39,9 @@ void initialise_buffers(void);
 unsigned char buffer_create(unsigned char *name);
 unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size);
 unsigned char buffer_load(unsigned char buffer_id);
+void buffers_calculate_freespace(void);
+void buffer_eject_from_memory(unsigned char bid);
+void buffer_eject_other(unsigned char but_not_this_one);
+unsigned char buffer_save(unsigned char bid);
+unsigned char buffer_load(unsigned char bid);
 

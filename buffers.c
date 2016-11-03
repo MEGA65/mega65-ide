@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "memory.h"
 #include "buffers.h"
 #include "screen.h"
@@ -13,7 +14,13 @@ void buffer_eject_from_memory(unsigned char bid)
      This simply consists of zeroing the allocation and recalculating free-space,
      unless the buffer is marked dirty, in which case we should save it to disk
      (perhaps after asking the user?) */
-  
+  if (buffers[bid].dirty) {
+    buffer_save(bid);
+  }
+  // Zero buffer entry
+  lfill((long)&buffers[bid],0,sizeof (struct known_buffer));
+  // Recalculate free space, so that we can't accumulate calculation errors
+  buffers_calculate_freespace();
 }
 
 
@@ -43,10 +50,19 @@ void buffer_eject_other(unsigned char but_not_this_one)
   // Nothing we could free, so return anyway.
 }
 
-void buffers_calculate_freespace()
+void buffers_calculate_freespace(void)
 {
   /* Work out how much free space we have in buffer memory given the current
-     allocations. */
+     allocations.
+
+     XXX - Check for overlapping allocations and complain
+  */
+  unsigned char bid;
+  buffer_space_free=total_buffer_memory;
+  for(bid=0;bid<MAX_BUFFERS;bid++) {
+    buffer_space_free-=buffers[bid].allocated;
+  }
+  
 }
 
 unsigned char buffer_create(unsigned char *name)
@@ -117,10 +133,6 @@ unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size)
   }
 }
 
-unsigned char buffer_load(unsigned char buffer_id)
-{
-}
-
 void initialise_buffers(void)
 {
   unsigned char i;
@@ -141,3 +153,36 @@ void initialise_buffers(void)
   i=buffer_create("memory.h");
   buffer_load(i);
 }
+
+FILE *f=NULL;
+unsigned char filename[2+16+1];
+unsigned char data_buffer[256];
+int r=0;
+unsigned int file_offset;
+
+unsigned char buffer_load(unsigned char buffer_id)
+{
+  // Initialise null-terminated filename
+  lfill((long)filename,0,sizeof filename);
+  lcopy((long)buffers[buffer_id].filename,(long)filename,16);
+
+  file_offset=0;
+  
+  f=fopen(filename,"r");
+  if (!f) return 0xff;
+  
+  while(!feof(f)) {
+    r=fread(data_buffer,1,256,f);
+    if (r>0) {
+      // Draw progress in footline
+      *(unsigned char *)(0xa000+(24*80)+(file_offset>>10))=r;
+    }
+  }
+  fclose(f);
+  return 0x00;
+}
+
+unsigned char buffer_save(unsigned char buffer_id)
+{
+}
+

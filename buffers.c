@@ -162,18 +162,16 @@ void initialise_buffers(void)
   // For testing, try to load a buffer
   i=buffer_create("memory.h");
   buffer_load(i);
-#if 0
   i=buffer_create("memory.c");
   buffer_load(i);
   i=buffer_create("buffers.c");
   buffer_load(i);
 
-  // set_single_window(i);
-  //  draw_windows();
+  set_single_window(i);
+  draw_windows();
   
   i=buffer_create("screen.c");
   buffer_load(i);
-#endif
 
 }
 

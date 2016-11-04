@@ -54,9 +54,10 @@ unsigned char poll_keyboard(void)
   case 129: // Switch to window 1, or close other windows
     current_window=0;
     if (last_key==129) { set_single_window(0); draw_windows(); }
+    else window_select(0);
     break;
   case 130: // Switch to window 2, creating it if necessary
-    window_select(2);
+    window_select(1);
     break;
   case 150: case 151: case 152: // Switch to window 3-5
     window_select(key-150+2);

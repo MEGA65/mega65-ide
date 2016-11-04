@@ -29,6 +29,24 @@ unsigned char window_count=0;
 unsigned char current_window=0;
 struct window windows[MAX_WINDOWS];
 
+void window_prev_buffer(void)
+{
+  unsigned char old_bid=windows[current_window].bid;
+  unsigned char bid=old_bid-1;
+
+  while(bid!=old_bid) {
+    if (bid==255) bid=MAX_BUFFERS-1;
+    if (buffers[bid].filename[0]) {
+      windows[current_window].bid=bid;
+      // XXX - Get last edit point from buffer, instead of jumping to the top?
+      windows[current_window].first_line=0;
+      draw_window(current_window);
+      return;
+      }
+    bid--;
+  }
+}
+
 void window_next_buffer(void)
 {
   unsigned char old_bid=windows[current_window].bid;
@@ -46,7 +64,8 @@ void window_next_buffer(void)
     bid++;
   }
 }
-  
+
+
 void window_scroll(unsigned int count)
 {
   // XXX - scroll count lines down (or -count lines up) in window

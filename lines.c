@@ -59,7 +59,9 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       display_footer(FOOTER_DISKERROR);
       return 0xffff;
     }
-  if (!buffers[buffer_id].loaded) FATAL_ERROR; 
+  // We shouldn't report a fatal error, as the disk could be removed or all sorts of
+  // other possibilities that aren't our fault.
+  // if (!buffers[buffer_id].loaded) FATAL_ERROR; 
 
   // Start from the beginning of the buffer, and search forward.
   line_search_buffer_offset=255;

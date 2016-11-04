@@ -20,7 +20,8 @@
   C= 3 (150) - Window 3 (create if not currently enabled)
   C= 4 (151) - Window 4 (create if not currently enabled)
   C= 5 (152) - Window 5 (create if not currently enabled)
-  C= B (191) - Switch to next possible buffer in this window
+  C= B (191) - Switch to previous possible buffer in this window
+  C= N (191) - Switch to next possible buffer in this window
   C= - (220) - Widen current window
   SHIFT - (221) - Reduce width of current window by 1
 
@@ -56,15 +57,18 @@ unsigned char poll_keyboard(void)
     if (last_key==129) { set_single_window(0); draw_windows(); }
     else window_select(0);
     break;
-  case 130: // Switch to window 2, creating it if necessary
+  case 149: // Switch to window 2, creating it if necessary
     window_select(1);
     break;
   case 150: case 151: case 152: // Switch to window 3-5
     window_select(key-150+2);
     break;
   case 191: // Change buffer in current window
-    window_next_buffer();
+    window_prev_buffer();
     break;
+  case 170: // Change buffer in current window
+    window_next_buffer();
+    break;    
   case 17: // cursor down
     window_scroll(1);
     break;

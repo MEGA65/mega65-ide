@@ -36,14 +36,24 @@ unsigned char line_buffer_length=0;
 unsigned char line_buffer_original_length=0;
 unsigned char line_buffer_dirty=0;
 
+// Information for current search for a line
 unsigned char line_search_buffer[255];
 unsigned char line_search_buffer_bytes;
 unsigned char line_search_buffer_offset;
 unsigned int line_offset_in_buffer,space_remaining;
 unsigned char c;
 
+// Information on the last line retrieved, to speed up search for
+// successive lines
+unsigned char last_buffer_id;
+unsigned int last_line_number;
+unsigned int last_line_offset_in_buffer;
+unsigned int line_number_in;
+
 unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
 {
+  line_number_in=line_number;
+  
   if (!buffers[buffer_id].loaded)
     if (buffer_load(buffer_id)) {
       display_footer(FOOTER_DISKERROR);
@@ -55,11 +65,21 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
   }
 
   // Start from the beginning of the buffer, and search forward.
-  line_offset_in_buffer=0;
   line_search_buffer_offset=255;
   line_search_buffer_bytes=0;
+
+  if ((last_buffer_id==buffer_id)&&(last_line_number<=line_number)) {
+    // We have recently accessed a line before this one somewhere, so we can
+    // re-use that as a starting point
+    line_number-=last_line_number;
+    line_offset_in_buffer=last_line_offset_in_buffer;
+  } else {
+    // No cached recent line to speed things up, so start at the beginning
+    line_offset_in_buffer=0;
+  }
   
   while(line_number) {
+    
     // Return failure if we have reached the end of the buffer
     if (line_offset_in_buffer>=buffers[buffer_id].length) return 0xffff;
 
@@ -69,10 +89,9 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       space_remaining=buffers[buffer_id].length-line_offset_in_buffer;
       if (space_remaining<255) c=space_remaining; else c=255;
       buffer_get_bytes(buffer_id,line_offset_in_buffer,c,line_search_buffer);
+      line_search_buffer_offset=0;
+      line_search_buffer_bytes=c;
     }
-
-
-
     
     if (line_search_buffer_offset>=line_search_buffer_bytes) {
       display_footer(FOOTER_FATAL);
@@ -87,23 +106,25 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       line_number--;
     }
   }
-  if (!line_number) return line_offset_in_buffer;
+  if (!line_number) {
+    // Remember line for next time
+    last_buffer_id=buffer_id;
+    last_line_number=line_number_in;
+    last_line_offset_in_buffer=line_offset_in_buffer;
+    // return address of line
+    return line_offset_in_buffer;
+  }
 }
 
 unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)  
 {
   // Find the line in the buffer
-  // XXX - Speed up with line offset cache of some sort
   line_offset_in_buffer=line_find_offset(buffer_id,line_number);
   if (line_offset_in_buffer==0xffff) return 0xff;
 
   // Read it into the buffer
   buffer_get_bytes(buffer_id,line_offset_in_buffer,255,line_buffer);
-
-  POKE(SCREEN_ADDRESS+0,line_offset_in_buffer&0xff);
-  POKE(SCREEN_ADDRESS+1,line_offset_in_buffer>>8);
-  
-  
+ 
   for(line_buffer_length=0;
       (line_buffer_length<0xff)
 	&&(line_buffer[line_buffer_length]!='\r')

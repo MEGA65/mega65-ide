@@ -290,6 +290,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   fclose(f);
   buffers[buffer_id].length=file_offset;
   buffers[buffer_id].loaded=1;
+  c65_io_enable();
 
   return 0x00;
 }

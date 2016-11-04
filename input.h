@@ -1,1 +1,1 @@
-void poll_keyboard(void);
+unsigned char poll_keyboard(void);

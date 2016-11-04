@@ -11,7 +11,7 @@ void main(void)
   initialise_windows();
   initialise_buffers();
 
-   while(1) poll_keyboard();
+  while(!poll_keyboard());
 
   // Exit nicely
 

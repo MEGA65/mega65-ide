@@ -12,9 +12,39 @@
 
   But for now, we will just use the kernal routines through cc65's library.
 
-*/
+  Key layout we are using:
 
-void poll_keyboard(void)
-{
-  
+  // Management of windows
+  C= 1 (129) - Window 1 (or close other windows if pressed twice)
+  C= 2 (149) - Window 2 (create if not currently enabled)
+  C= 3 (150) - Window 3 (create if not currently enabled)
+  C= 4 (151) - Window 4 (create if not currently enabled)
+  C= 5 (152) - Window 5 (create if not currently enabled)
+  C= - (220) - Widen current window
+  SHIFT - (221) - Reduce width of current window by 1
+
+  C= Q (171) - Press 3 times to quit without saving
+
+  // Usual cursor navigation stuff
+  DOWN (17) - move cursor down
+  UP (145) - move cursor up
+
+  ...
+
+
+*/
+#include <stdio.h>
+#include <conio.h>
+#include "memory.h"
+#include "screen.h"
+
+unsigned char key;
+unsigned char quit_counter=0;
+unsigned char poll_keyboard(void)
+{  
+  key=cgetc();
+  POKE(SCREEN_ADDRESS,key);
+  if (key!=171) quit_counter=0;
+  else { if ((++quit_counter)>2) return 0xff; }
+  return 0;
 }

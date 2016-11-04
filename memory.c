@@ -129,6 +129,9 @@ void lfill(long destination_address, unsigned char value,
 
 void c65_io_enable(void)
 {
+  // Gate C65 IO enable
   POKE(0xd02fU,0xA5);
   POKE(0xd02fU,0x96);
+  // Force back to 3.5MHz
+  POKE(0xD031,PEEK(0xD031)|0x40);
 }

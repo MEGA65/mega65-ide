@@ -129,7 +129,7 @@ void draw_window(unsigned char w_in)
   for(l=0;(l<16)&&buffers[windows[w].bid].filename[l];l++) continue;
   
   // Put line number  
-  screen_decimal((long)window_title_buffer+l+1,windows[w].first_line,REVERSE_VIDEO);
+  screen_decimal((long)window_title_buffer+l+1,windows[w].first_line,NORMAL_VIDEO);
   
   // Put the file name
   lcopy((long)buffers[windows[w].bid].filename,(long)window_title_buffer,l);

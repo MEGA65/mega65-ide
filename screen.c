@@ -145,6 +145,9 @@ unsigned char ii,j,carry,temp;
 unsigned int value;
 void screen_decimal(unsigned int addr,unsigned int v,unsigned char bits)
 {
+  // XXX - We should do this off-screen and copy into place later, to avoid glitching
+  // on display.
+  
   value=v;
   
   // Start with all zeros

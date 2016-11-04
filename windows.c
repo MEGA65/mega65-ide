@@ -72,8 +72,11 @@ void draw_windows(void)
 	      (long)screen_line_address+win->x,win->width-1);
 	ascii_to_screen_segment((unsigned char *)(screen_line_address+win->x),
 				win->width,NORMAL_VIDEO);
-	screen_colour_line_segment(screen_line_address+win->x,win->width-1,14);
+	screen_colour_line_segment(screen_line_address+win->x,win->width-1,14);	
       }
+      // Draw border character (reverse 
+      POKE(screen_line_address+win->x+win->width-1,0x5d); // vertical line
+      lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x+win->width-1,1);
     }
   }
 }

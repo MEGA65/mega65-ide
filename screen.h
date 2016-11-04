@@ -1,4 +1,5 @@
 #define SCREEN_ADDRESS (0xa000U)
+#define COLOUR_RAM_ADDRESS (0x1f800)
 #define FOOTER_ADDRESS (SCREEN_ADDRESS+24*80)
 
 #define FOOTER_COPYRIGHT     0
@@ -28,3 +29,6 @@ void screen_colour_line(unsigned char line,unsigned char colour);
 #define screen_colour_line_segment(LA,W,C) lfill(LA+(0x1f800-SCREEN_ADDRESS),C,W)
 
 void screen_hex(unsigned int addr,long value);
+
+extern unsigned char ascii_map[256];
+#define ascii_to_screen(X) ascii_map[X]

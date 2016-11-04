@@ -128,11 +128,8 @@ void draw_window(unsigned char w_in)
   // Work out length of filename
   for(l=0;(l<16)&&buffers[windows[w].bid].filename[l];l++) continue;
   
-  // Put 4-digit line number
-  // (we are using 6-digit hex routine for now, so position it left a bit,
-  // and let the filename overwrite it).
-  // XXX Line number won't show for buffers with names <1 chars long
-  if (l) screen_hex((long)window_title_buffer+l-1,windows[w].first_line);
+  // Put line number  
+  screen_decimal((long)window_title_buffer+l+1,windows[w].first_line,REVERSE_VIDEO);
   
   // Put the file name
   lcopy((long)buffers[windows[w].bid].filename,(long)window_title_buffer,l);

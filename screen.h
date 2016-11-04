@@ -29,6 +29,7 @@ void screen_colour_line(unsigned char line,unsigned char colour);
 #define screen_colour_line_segment(LA,W,C) lfill(LA+(0x1f800-SCREEN_ADDRESS),C,W)
 
 void screen_hex(unsigned int addr,long value);
+void screen_decimal(unsigned int addr,unsigned int value,unsigned char bits);
 
 extern unsigned char ascii_map[256];
 #define ascii_to_screen(X) ascii_map[X]

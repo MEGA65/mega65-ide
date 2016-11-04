@@ -268,7 +268,7 @@ unsigned char buffer_load(unsigned char buffer_id)
       }
 
       // Show hex file offset progress while loading
-      screen_hex(FOOTER_ADDRESS+74,file_offset);
+      screen_decimal(FOOTER_ADDRESS+75,file_offset,REVERSE_VIDEO);
 
       // Allocate more space for buffer if required.
       if (new_offset>buffers[buffer_id].allocated) {

@@ -122,6 +122,66 @@ void screen_hex(unsigned int addr,long value)
   POKE(addr+5,to_screen_hex(value>>0));
 }
 
+unsigned char screen_decimal_digits[16][5]={
+  {0,0,0,0,1},
+  {0,0,0,0,2},
+  {0,0,0,0,4},
+  {0,0,0,0,8},
+  {0,0,0,1,6},
+  {0,0,0,3,2},
+  {0,0,0,6,4},
+  {0,0,1,2,8},
+  {0,0,2,5,6},
+  {0,0,5,1,2},
+  {0,1,0,2,4},
+  {0,2,0,4,8},
+  {0,4,0,9,6},
+  {0,8,1,9,2},
+  {0,6,3,8,4},
+  {3,2,7,6,8}
+};
+
+unsigned char ii,j,carry,temp;
+unsigned int value;
+void screen_decimal(unsigned int addr,unsigned int v,unsigned char bits)
+{
+  value=v;
+  
+  // Start with all zeros
+  for(ii=0;ii<5;ii++) POKE(addr+ii,0);
+  
+  // Add power of two strings for all non-zero bits in value.
+  // XXX - We should use BCD mode to do this more efficiently
+  for(ii=0;ii<16;ii++) {
+    if (value&1) {
+      carry=0;
+      for(j=4;j<128;j--) {
+	temp=PEEK(addr+j)+screen_decimal_digits[ii][j]+carry;
+	if (temp>9) {
+	  temp-=10;
+	  carry=1;
+	} else carry=0;
+	POKE(addr+j,temp);
+      }
+    }
+    value=value>>1;
+  }
+
+  // Now convert to ascii digits
+  for(j=0;j<5;j++) POKE(addr+j,(PEEK(addr+j)+'0')|bits);
+
+  
+  // and shift out leading zeros
+  for(j=0;j<4;j++) {
+    if (PEEK(addr)!=('0'|bits)) break;
+    POKE(addr,PEEK(addr+1));
+    POKE(addr+1,PEEK(addr+2));
+    POKE(addr+2,PEEK(addr+3));
+    POKE(addr+3,PEEK(addr+4));
+    POKE(addr+4,' '|bits);
+  }
+}
+
 long addr;
 void display_footer(unsigned char index)
 {  
@@ -186,10 +246,9 @@ void screen_colour_line(unsigned char line,unsigned char colour)
 void fatal_error(unsigned char *filename, unsigned int line_number)
 {
   display_footer(FOOTER_FATAL);
-  for(i=0;filename[i];i++) POKE(FOOTER_ADDRESS+44+i,filename[i]);
-  POKE(FOOTER_ADDRESS+44+i,':'); i++;
-  screen_hex(FOOTER_ADDRESS+44+i,line_number);
-  mungedascii_to_screen_80((long)FOOTER_ADDRESS,REVERSE_VIDEO);
+  for(i=0;filename[i];i++) POKE(FOOTER_ADDRESS+44+i,filename[i]|REVERSE_VIDEO);
+  POKE(FOOTER_ADDRESS+44+i,':'|REVERSE_VIDEO); i++;
+  screen_decimal(FOOTER_ADDRESS+44+i,line_number,REVERSE_VIDEO);
   lfill(COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+FOOTER_ADDRESS,2,80);
   for(;;) continue;
 }

@@ -5,7 +5,7 @@
 #include "windows.h"
 #include "input.h"
 
-int main()
+void main(void)
 {  
   setup_screen();
   initialise_windows();
@@ -22,4 +22,5 @@ int main()
   POKE(0xd02f,0);
   // Reset machine
   __asm__ ( "jmp $fce2" );
+
 }

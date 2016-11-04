@@ -53,7 +53,6 @@ unsigned char poll_keyboard(void)
 
   switch(key) {
   case 129: // Switch to window 1, or close other windows
-    current_window=0;
     if (last_key==129) { set_single_window(0); draw_windows(); }
     else window_select(0);
     break;

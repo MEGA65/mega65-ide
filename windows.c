@@ -96,9 +96,16 @@ void window_select(unsigned char win_id)
 			offset,width);
       offset+=width;
     }
+    current_window=win_id;
+    draw_windows();
+  } else {
+    // Don't redraw whole screen if we aren't changing the number of columns
+    if (win_id!=current_window) {
+      draw_window_title(win_id,1);
+      draw_window_title(current_window,0);
+    }
   }
   current_window=win_id;
-  draw_windows();
 }
 
 void set_single_window(unsigned char bid)
@@ -138,7 +145,17 @@ void draw_window(unsigned char w_in)
   struct window *win=&windows[w_in];
 
   w=w_in;
+
+  draw_window_title(w_in,w_in==current_window);
+
   
+  // Draw 23 lines from file
+  for(l=0;l<23;l++) draw_window_line(w,l);
+}
+
+void draw_window_title(unsigned char w_in, unsigned char activeP)
+{
+  w=w_in;
   // Draw window title
   
   // Start with a blank line
@@ -159,14 +176,13 @@ void draw_window(unsigned char w_in)
 	windows[w].width-1);
 
   // Change colour of header based on whether we are the active window or not
-  if (w_in==current_window) {
+  if (activeP) {
     // white
+    lfill(COLOUR_RAM_ADDRESS+windows[w].x,1,windows[w].width-1);
   } else {
-    // light grey
+    // medium grey
+    lfill(COLOUR_RAM_ADDRESS+windows[w].x,12,windows[w].width-1);
   }
-  
-  // Draw 23 lines from file
-  for(l=0;l<23;l++) draw_window_line(w,l);
 }
 
 void draw_window_line(unsigned char w_in, unsigned char l_in)

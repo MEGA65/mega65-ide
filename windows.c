@@ -58,20 +58,20 @@ void initialise_windows(void)
 }
 
 unsigned char window_default_widths[6][5]={
-  {0,0,0,0,0}, // dummy row, since we consider the count from 1, not 0
   {80,0,0,0,0},
   {40,40,0,0,0},
-  {27,26,26,0,0},
+  {27,26,27,0,0},
   {20,20,20,20,0},
   {16,16,16,16,16}};
 
 void window_select(unsigned char win_id)
 {
-  if (window_count<win_id) {
+  if (win_id>4) return;
+  if (window_count<=win_id) {
     // Insufficient windows open
     unsigned char offset=0;
     unsigned char width;
-    for(window_count=0;window_count<win_id;window_count++) {
+    for(window_count=0;window_count<=win_id;window_count++) {
       width=window_default_widths[win_id][window_count];
       window_initialise(window_count,windows[window_count].bid,
 			offset,width);

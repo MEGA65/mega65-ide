@@ -32,3 +32,6 @@ void screen_hex(unsigned int addr,long value);
 
 extern unsigned char ascii_map[256];
 #define ascii_to_screen(X) ascii_map[X]
+
+void fatal_error(unsigned char *filename, unsigned int line_number);
+#define FATAL_ERROR fatal_error(__FILE__,__LINE__)

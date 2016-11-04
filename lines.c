@@ -59,10 +59,7 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       display_footer(FOOTER_DISKERROR);
       return 0xffff;
     }
-  if (!buffers[buffer_id].loaded) {
-    display_footer(FOOTER_FATAL);
-    for(;;) continue;
-  }
+  if (!buffers[buffer_id].loaded) FATAL_ERROR; 
 
   // Start from the beginning of the buffer, and search forward.
   line_search_buffer_offset=255;
@@ -94,8 +91,7 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
     }
     
     if (line_search_buffer_offset>=line_search_buffer_bytes) {
-      display_footer(FOOTER_FATAL);
-      for(;;) continue;
+      FATAL_ERROR;
     }
 
     c=line_search_buffer[line_search_buffer_offset];

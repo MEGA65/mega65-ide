@@ -193,8 +193,7 @@ void buffer_getset_bytes(unsigned char buffer_id,unsigned int offset, unsigned i
 
     if (!real_memory_offset) {
       // Something bad has happened.
-      display_footer(FOOTER_FATAL);
-      for(;;) continue;
+      FATAL_ERROR;
     }
     
     // And how many bytes we can contigously write

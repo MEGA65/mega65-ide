@@ -8,7 +8,7 @@ unsigned char *footer_messages[FOOTER_MAX+1]={
   "Out of memory. Closing buffers might help.                                      ",
   "Buffer too large (must be <65535 bytes).                                        ",
   "Line too long. Lines must be <255 characters in length.                         ",
-  "Fatal error: Something horrible has happened to memory. Probably a bug.         ",
+  "Fatal error occurred. Probably a bug. Clue: no clue                             ",
   "Disk error. Could not read/write buffer or other thing to/from disk.            "
 };
 unsigned char footers_initialised=0;
@@ -181,4 +181,15 @@ void screen_colour_line(unsigned char line,unsigned char colour)
   // Set colour RAM for this screen line to this colour
   // (use bit-shifting as fast alternative to multiply)
   lfill(0x1f800+(line<<6)+(line<<4),colour,80);
+}
+
+void fatal_error(unsigned char *filename, unsigned int line_number)
+{
+  display_footer(FOOTER_FATAL);
+  for(i=0;filename[i];i++) POKE(FOOTER_ADDRESS+44+i,filename[i]);
+  POKE(FOOTER_ADDRESS+44+i,':'); i++;
+  screen_hex(FOOTER_ADDRESS+44+i,line_number);
+  mungedascii_to_screen_80((long)FOOTER_ADDRESS,REVERSE_VIDEO);
+  lfill(COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+FOOTER_ADDRESS,2,80);
+  for(;;) continue;
 }

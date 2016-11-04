@@ -9,7 +9,7 @@
 
 unsigned char buffer_memory_segment_count=2;
 long buffer_memory_segments[2]={0x0a800,0x12000};
-long buffer_memory_segment_lengths[2]={(0x10000-0xa800),
+long buffer_memory_segment_lengths[2]={(0xc000-0xa800),
 				       (0x1f800-0x12000)};  
 long total_buffer_memory;
 

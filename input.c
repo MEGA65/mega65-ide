@@ -72,5 +72,6 @@ unsigned char poll_keyboard(void)
     window_scroll(-1);
     break;
   }
+  last_key=key;
   return 0;
 }

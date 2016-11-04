@@ -29,21 +29,75 @@ unsigned char window_count=0;
 unsigned char current_window=0;
 struct window windows[MAX_WINDOWS];
 
+void window_next_buffer(void)
+{
+  unsigned char old_bid=windows[current_window].bid;
+  unsigned char bid=old_bid+1;
+
+  while(bid!=old_bid) {    
+    if (windows[current_window].bid>=MAX_BUFFERS)
+      windows[current_window].bid=0;
+    if (buffers[windows[current_window].bid].filename[0]) {
+      windows[current_window].bid=bid;
+      // XXX - Get last edit point from buffer, instead of jumping to the top?
+      windows[current_window].first_line=0;
+      draw_window(current_window);
+      return;
+      }
+  }
+}
+  
+void window_scroll(unsigned int count)
+{
+  // XXX - scroll count lines down (or -count lines up) in window
+}
+
 void initialise_windows(void)
 {
   window_count=0;
 }
 
+unsigned char window_default_widths[6][5]={
+  {0,0,0,0,0}, // dummy row, since we consider the count from 1, not 0
+  {80,0,0,0,0},
+  {40,40,0,0,0},
+  {27,26,26,0,0},
+  {20,20,20,20,0},
+  {16,16,16,16,16}};
+
+void window_select(unsigned char win_id)
+{
+  if (window_count<win_id) {
+    // Insufficient windows open
+    unsigned char offset=0;
+    unsigned char width;
+    for(window_count=0;window_count<win_id;window_count++) {
+      width=window_default_widths[win_id][window_count];
+      window_initialise(window_count,windows[window_count].bid,
+			offset,width);
+      offset+=width;
+    }
+  }
+  current_window=win_id;
+  draw_windows();
+}
+
 void set_single_window(unsigned char bid)
 {
   current_window=0;
+  window_initialise(0,bid,0,80);
   window_count=1;
-  windows[0].bid=bid;
-  windows[0].x=0;
-  windows[0].width=80;
-  windows[0].xoffset=0;
-  windows[0].first_line=0;
-  windows[0].buffer_offset_of_first_line=0;
+}
+
+void window_initialise(unsigned char wid,unsigned char bid,
+		       unsigned char o,unsigned char w)
+{
+  windows[wid].bid=bid;
+  windows[wid].x=o;
+  windows[wid].width=w;
+  windows[wid].xoffset=0;
+  windows[wid].first_line=0;
+  windows[wid].buffer_offset_of_first_line=0;
 }
 
 unsigned char w,l;
@@ -86,7 +140,14 @@ void draw_window(unsigned char w_in)
   
   ascii_to_screen_segment(window_title_buffer,80,REVERSE_VIDEO);
   lcopy((long)window_title_buffer,SCREEN_ADDRESS+windows[w].x,
-	windows[w].width-1);    
+	windows[w].width-1);
+
+  // Change colour of header based on whether we are the active window or not
+  if (w_in==current_window) {
+    // white
+  } else {
+    // light grey
+  }
   
   // Draw 23 lines from file
   for(l=0;l<23;l++) draw_window_line(w,l);

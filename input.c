@@ -20,6 +20,7 @@
   C= 3 (150) - Window 3 (create if not currently enabled)
   C= 4 (151) - Window 4 (create if not currently enabled)
   C= 5 (152) - Window 5 (create if not currently enabled)
+  C= B (191) - Switch to next possible buffer in this window
   C= - (220) - Widen current window
   SHIFT - (221) - Reduce width of current window by 1
 
@@ -37,8 +38,10 @@
 #include <conio.h>
 #include "memory.h"
 #include "screen.h"
+#include "windows.h"
 
 unsigned char key;
+unsigned char last_key;
 unsigned char quit_counter=0;
 unsigned char poll_keyboard(void)
 {  
@@ -46,5 +49,27 @@ unsigned char poll_keyboard(void)
   POKE(SCREEN_ADDRESS,key);
   if (key!=171) quit_counter=0;
   else { if ((++quit_counter)>2) return 0xff; }
+
+  switch(key) {
+  case 129: // Switch to window 1, or close other windows
+    current_window=0;
+    if (last_key==129) { set_single_window(0); draw_windows(); }
+    break;
+  case 130: // Switch to window 2, creating it if necessary
+    window_select(2);
+    break;
+  case 150: case 151: case 152: // Switch to window 3-5
+    window_select(key-150+2);
+    break;
+  case 191: // Change buffer in current window
+    window_next_buffer();
+    break;
+  case 17: // cursor down
+    window_scroll(1);
+    break;
+  case 145: // cursor up
+    window_scroll(-1);
+    break;
+  }
   return 0;
 }

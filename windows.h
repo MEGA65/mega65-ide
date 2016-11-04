@@ -14,8 +14,16 @@ struct window {
 };
 #define MAX_WINDOWS 5
 
+extern unsigned char current_window;
+
 void initialise_windows(void);
+void window_initialise(unsigned char wid,unsigned char bid,
+		       unsigned char o,unsigned char w);
 void set_single_window(unsigned char bid);
+void window_select(unsigned char win_id);
+void window_next_buffer(void);
+void window_scroll(unsigned int count);
+
 void draw_windows(void);
 void draw_window(unsigned char w);
 void draw_window_line(unsigned char w_in, unsigned char l_in);

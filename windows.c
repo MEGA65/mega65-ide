@@ -34,16 +34,16 @@ void window_next_buffer(void)
   unsigned char old_bid=windows[current_window].bid;
   unsigned char bid=old_bid+1;
 
-  while(bid!=old_bid) {    
-    if (windows[current_window].bid>=MAX_BUFFERS)
-      windows[current_window].bid=0;
-    if (buffers[windows[current_window].bid].filename[0]) {
+  while(bid!=old_bid) {
+    if (bid>=MAX_BUFFERS) bid=0;
+    if (buffers[bid].filename[0]) {
       windows[current_window].bid=bid;
       // XXX - Get last edit point from buffer, instead of jumping to the top?
       windows[current_window].first_line=0;
       draw_window(current_window);
       return;
       }
+    bid++;
   }
 }
   

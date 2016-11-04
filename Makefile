@@ -11,21 +11,24 @@ M65IDESOURCES=	main.c \
 		screen.c \
 		buffers.c \
 		lines.c \
-		windows.c
+		windows.c \
+		input.c
 
 ASSFILES=	main.s \
 		memory.s \
 		screen.s \
 		buffers.s \
 		lines.s \
-		windows.s 
+		windows.s \
+		input.s
 
 HEADERS=	Makefile \
 		memory.h \
 		screen.h \
 		buffers.h \
 		lines.h \
-		windows.h
+		windows.h \
+		input.h
 
 M65IDE.D81:	$(FILES)
 	if [ -a M65IDE.D81 ]; then rm -f M65IDE.D81; fi

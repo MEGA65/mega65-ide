@@ -148,7 +148,7 @@ void initialise_buffers(void)
   unsigned char i;
 
   // Mark all buffers clean and empty
-  lfill(0x00400U,0,1024);
+  lfill(BUFFER_LIST_BASE,0,BUFFER_LIST_TOP-BUFFER_LIST_BASE+1);
 
   // Work out total buffer memory available
   total_buffer_memory=0;
@@ -228,6 +228,15 @@ unsigned int new_offset;
 unsigned char buffer_load(unsigned char buffer_id)
 {
   buffers[buffer_id].loaded=0;
+
+  if (!buffers[buffer_id].filename[0]) return 0xff;
+  
+  if (buffers[buffer_id].filename[0]=='*') {
+    // Pseudo buffer.  If thown away, it just becomes empty
+    buffers[buffer_id].length=0;
+    buffer_allocate(buffer_id,0);
+    return 0x00;
+  }
   
   // Initialise null-terminated filename
   lfill((long)filename,0,sizeof filename);

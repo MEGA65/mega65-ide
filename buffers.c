@@ -5,6 +5,7 @@
 #include "windows.h"
 
 long buffer_space_free=0;
+long buffer_first_free_byte=0;
 
 // Here is where buffers live
 struct known_buffer *buffers = (struct known_buffer *)BUFFER_LIST_BASE;
@@ -60,17 +61,80 @@ void buffer_eject_other(unsigned char but_not_this_one)
   // Nothing we could free, so return anyway.
 }
 
+
+/*
+  Relocate a buffer from its current location to a new one. 
+  Typically this is called when compacting memory to upate buffer_first_free_byte,
+  or when loading a buffer requires the ejection of other buffers.
+
+  Main trick here is making sure we don't corrupt things as we go.
+*/
+void buffer_relocate(unsigned char bid,long new_resident_address)
+{
+  long current_resident_address=(((long)buffers[bid].resident_address_high)<<16)
+	  +buffers[bid].resident_address_low;
+  long difference=new_resident_address-current_resident_address;
+  if (!difference) return;
+  if (difference<0) {
+    // Move upwards in memory
+  } else {
+    // Move downwards in memory
+  }
+}
+
 void buffers_calculate_freespace(void)
 {
   /* Work out how much free space we have in buffer memory given the current
      allocations.
 
-     XXX - Check for overlapping allocations and complain
+     XXX - Check for overlapping allocations and complain.
+
+     XXX - This routine is also required to calculate buffer_first_free_byte, and
+     thus to compact all existing buffers down.
+
   */
-  unsigned char bid;
+  unsigned char bid,best_bid;
+  long best_buffer_address;
   buffer_space_free=total_buffer_memory;
   for(bid=0;bid<MAX_BUFFERS;bid++) {
     buffer_space_free-=buffers[bid].allocated;
+  }
+
+  /*
+    We want to start at the beginning of buffer space, and find the 
+    buffer which starts closest to this point, but not before it.
+    If the buffer starts after the point, it should get shuffled down.
+    After this potentially shuffling, we should advance buffer_first_free_byte
+    to the end of that allocation. We repeat this until there is no more buffers.
+    At this point, buffer_first_free_byte will be valid, and all buffers will have
+    been compacted down.
+  */
+
+  buffer_first_free_byte=0;
+  bid=1;
+  while(bid!=MAX_BUFFERS) {
+    best_bid=0xff;
+    best_buffer_address=0x7fffffff;
+    for(bid=0;bid<MAX_BUFFERS;bid++) {
+      if (buffers[bid].loaded) {
+	long buffer_address=(((long)buffers[bid].resident_address_high)<<16)
+	  +buffers[bid].resident_address_low;
+	if (buffer_address>=buffer_first_free_byte)
+	  if (buffer_address<best_buffer_address) {
+	    best_bid=bid;
+	    best_buffer_address=buffer_address;
+	  }
+      }      
+    }
+    if (best_bid==0xff)
+      // all done
+      break;
+    if (best_buffer_address>buffer_first_free_byte) {
+      // Shuffle down
+      buffer_relocate(bid,best_buffer_address);
+    }
+    // Advance search beyond this buffer
+    buffer_first_free_byte+=buffers[bid].allocated;
   }
   
 }
@@ -107,8 +171,21 @@ unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size)
   long difference = size - buffers[buffer_id].length;
   if (difference < 0) {
     // Trying to allocate buffer to below its used size.
+    // (.length must be reduced first)
     return 0xff;
   }
+
+  if (!buffers[buffer_id].allocated) {
+    // No prior allocation exists - find first free space
+
+    // First pack all buffers down
+    buffers_calculate_freespace();
+
+    // Then we can just use first free address
+    buffers[buffer_id].resident_address_low=buffer_first_free_byte&0xffffU;
+    buffers[buffer_id].resident_address_high=buffer_first_free_byte>>16;
+  }
+  
   difference = size - buffers[buffer_id].allocated;
   // Return if the request is moot.
   if (difference == 0) return 0x00;

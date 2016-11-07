@@ -211,7 +211,7 @@ unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size)
     return 0xff;
   }
 
-  if (!buffers[buffer_id].allocated) {
+  if (!buffers[buffer_id].loaded) {
     // No prior allocation exists - find first free space
 
     // First pack all buffers down
@@ -346,6 +346,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   if (buffers[buffer_id].filename[0]=='*') {
     // Pseudo buffer.  If thown away, it just becomes empty
     buffers[buffer_id].length=0;
+    buffers[buffer_id].loaded=0;
     buffer_allocate(buffer_id,0);
     return 0x00;
   }

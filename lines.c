@@ -64,9 +64,11 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
   // if (!buffers[buffer_id].loaded) FATAL_ERROR; 
 
   // Start from the beginning of the buffer, and search forward.
-  line_search_buffer_offset=255;
+  line_search_buffer_offset=0;
   line_search_buffer_bytes=0;
 
+  // XXX - When we enable editing of buffers, we have to discard the last_line_number
+  // stuff, or at least amend it, if lines are added, deleted or modified
   if ((last_buffer_id==buffer_id)&&(last_line_number<=line_number)) {
     // We have recently accessed a line before this one somewhere, so we can
     // re-use that as a starting point
@@ -82,9 +84,28 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
     // Return failure if we have reached the end of the buffer
     if (line_offset_in_buffer>=buffers[buffer_id].length) return 0xffff;
 
+    // Quickly scan through the bytes we have
+    while(line_search_buffer_offset!=line_search_buffer_bytes) {
+      // Keep loop as simple as possible
+      if (line_search_buffer[line_search_buffer_offset]<14) {
+	if ((line_search_buffer[line_search_buffer_offset]=='\r')
+	    ||(line_search_buffer[line_search_buffer_offset]=='\n')) {
+	  line_number--;
+	  if (!line_number) {
+	    // Here is where we want to be.
+	    line_offset_in_buffer+=line_search_buffer_offset+1;
+	    break;
+	  }
+	}
+      }
+      ++line_search_buffer_offset;
+    }
+    if (!line_number) break;
+    
     // Make sure we have some bytes to work with
-    if (line_search_buffer_offset>=line_search_buffer_bytes) {
+    {
       // We need to read some more bytes from the buffer to search
+      line_offset_in_buffer+=line_search_buffer_bytes;
       space_remaining=buffers[buffer_id].length-line_offset_in_buffer;
       if (space_remaining<255) c=space_remaining; else c=255;
       buffer_get_bytes(buffer_id,line_offset_in_buffer,c,line_search_buffer);
@@ -96,13 +117,6 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       FATAL_ERROR;
     }
 
-    c=line_search_buffer[line_search_buffer_offset];
-    line_search_buffer_offset++;
-    line_offset_in_buffer++;
-    if (c=='\n'||c=='\r') {
-      // Found an end of line marker.
-      line_number--;
-    }
   }
   if (!line_number) {
     // Remember line for next time
@@ -159,12 +173,14 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
       screen_decimal((unsigned int)&line_buffer[56],buffers[bid].length,
 		     NORMAL_VIDEO);
 
-    }
+    }    
+    // convert screen codes for hex to ASCII
+    for(i=0;i<80;i++) if (line_buffer[i]<' ') line_buffer[i]|=0x60;
   } else {
     // Find the line in the buffer
     line_offset_in_buffer=line_find_offset(buffer_id,line_number);
     if (line_offset_in_buffer==0xffff) return 0xff;
-    
+
     // Read it into the buffer
     buffer_get_bytes(buffer_id,line_offset_in_buffer,255,line_buffer);
     

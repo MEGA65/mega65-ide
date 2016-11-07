@@ -23,6 +23,7 @@ void buffer_eject_from_memory(unsigned char bid)
     }
   }
   buffers[bid].loaded=0;
+  buffers[bid].allocated=0;
 
   // Recalculate free space, so that we can't accumulate calculation errors
   buffers_calculate_freespace();
@@ -147,7 +148,9 @@ void buffers_calculate_freespace(void)
   */
 
   buffer_first_free_byte=0;
+
   bid=1;
+  
   while(bid!=MAX_BUFFERS) {
     best_bid=0xff;
     best_buffer_address=0x7fffffff;
@@ -167,12 +170,13 @@ void buffers_calculate_freespace(void)
       break;
     if (best_buffer_address>buffer_first_free_byte) {
       // Shuffle down
-      buffer_relocate(bid,best_buffer_address);
+      buffer_relocate(best_bid,best_buffer_address);
     }
     // Advance search beyond this buffer
-    buffer_first_free_byte+=buffers[bid].allocated;
+    buffer_first_free_byte+=buffers[best_bid].allocated;
+    bid=best_bid;
   }
-  
+
 }
 
 unsigned char buffer_create(unsigned char *name)
@@ -340,6 +344,8 @@ unsigned int new_offset;
 unsigned char buffer_load(unsigned char buffer_id)
 {
   buffers[buffer_id].loaded=0;
+  buffers[buffer_id].allocated=0;
+  buffers_calculate_freespace();
 
   if (!buffers[buffer_id].filename[0]) return 0xff;
   

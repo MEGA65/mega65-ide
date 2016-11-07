@@ -66,8 +66,6 @@ void buffer_eject_other(unsigned char but_not_this_one)
   Relocate a buffer from its current location to a new one. 
   Typically this is called when compacting memory to upate buffer_first_free_byte,
   or when loading a buffer requires the ejection of other buffers.
-
-  Main trick here is making sure we don't corrupt things as we go.
 */
 void buffer_relocate(unsigned char bid,long new_resident_address)
 {
@@ -75,10 +73,48 @@ void buffer_relocate(unsigned char bid,long new_resident_address)
 	  +buffers[bid].resident_address_low;
   long difference=new_resident_address-current_resident_address;
   if (!difference) return;
-  if (difference<0) {
-    // Move upwards in memory
+
+  // Move buffer
+  buffer_move_mem(current_resident_address,new_resident_address,
+		  buffers[bid].length);
+
+  // Update buffer structure to reflect move
+  buffers[bid].resident_address_low=new_resident_address;
+  buffers[bid].resident_address_high=new_resident_address>>16;
+}
+
+/* Move a section of buffer memory.
+   Really quite simple except for the fact that the buffer memory is non-contiguous.
+*/
+
+unsigned int fcount,tcount;
+long bfrom,bto;
+void buffer_move_mem(long from,long to, unsigned int length)
+{
+  if (from<to) {
+    // Move memory up -- a little trickier, because we have to copy sections in
+    // reverse order
+
+    // XXX Not yet implemented
+    FATAL_ERROR;
   } else {
-    // Move downwards in memory
+    // Move memory down -- fairly straight forward
+    while(length) {
+      fcount=buffer_address_contiguous_bytes(from);
+      tcount=buffer_address_contiguous_bytes(to);
+      if (tcount<fcount) tcount=fcount;
+      if (tcount<length) tcount=length;
+
+      // Move tcount bytes from from to to
+      bfrom=buffer_address_to_real(from);
+      bto=buffer_address_to_real(to);
+      lcopy(bfrom,bto,tcount);
+	    
+      // Work out what is left
+      length-=tcount;
+      from+=length;
+      to+=length;
+    }
   }
 }
 

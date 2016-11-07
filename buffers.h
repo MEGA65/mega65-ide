@@ -49,6 +49,8 @@ void initialise_buffers(void);
 unsigned char buffer_create(unsigned char *name);
 unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size);
 unsigned char buffer_load(unsigned char buffer_id);
+void buffer_relocate(unsigned char bid,long new_resident_address);
+void buffer_move_mem(long from,long to, unsigned int length);
 void buffers_calculate_freespace(void);
 void buffer_eject_from_memory(unsigned char bid);
 void buffer_eject_other(unsigned char but_not_this_one);

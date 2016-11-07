@@ -130,10 +130,14 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
 
     // Start with spaces
     lfill((long)line_buffer,' ',255);
-    line_buffer_length=78;
+    line_buffer_length=80;
 
     if (!bid) {
       lcopy((long)buffer_list_header,(long)line_buffer,80);
+
+      // Then first free buffer address
+      screen_hex((unsigned int)&line_buffer[73],buffer_first_free_byte);
+
     } else if (buffers[bid].filename[0]) {      
       // File name
       for(i=0;buffers[bid].filename[i]&&(i<16);i++)
@@ -154,6 +158,7 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
       // Then used length (hex)
       screen_decimal((unsigned int)&line_buffer[56],buffers[bid].length,
 		     NORMAL_VIDEO);
+
     }
   } else {
     // Find the line in the buffer

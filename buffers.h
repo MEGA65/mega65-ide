@@ -45,6 +45,9 @@ struct known_buffer {
 
 extern struct known_buffer *buffers;
 
+extern long buffer_first_free_byte;
+
+
 void initialise_buffers(void);
 unsigned char buffer_create(unsigned char *name);
 unsigned char buffer_allocate(unsigned char buffer_id, unsigned int size);

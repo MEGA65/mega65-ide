@@ -114,23 +114,64 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
   }
 }
 
+unsigned char buffer_list_header[80]=
+  "filename          flags                 base    alloc   length                  ";
+
+
 unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)  
 {
-  // Find the line in the buffer
-  line_offset_in_buffer=line_find_offset(buffer_id,line_number);
-  if (line_offset_in_buffer==0xffff) return 0xff;
+  unsigned char i;
+  
+  if (!buffer_id) {
+    /* It is the *buffer-list* buffer:
+       Generate the line of information about the buffer slot.
+    */
+    unsigned char bid=line_number;
 
-  // Read it into the buffer
-  buffer_get_bytes(buffer_id,line_offset_in_buffer,255,line_buffer);
- 
-  for(line_buffer_length=0;
-      (line_buffer_length<0xff)
-	&&(line_buffer[line_buffer_length]!='\r')
-	&&(line_buffer[line_buffer_length]!='\n');line_buffer_length++)
-    continue;
-  if (line_buffer_length==0xff) {
-    display_footer(FOOTER_LINETOOLONG);
-    return 0xff;
+    // Start with spaces
+    lfill((long)line_buffer,' ',255);
+    line_buffer_length=78;
+
+    if (!bid) {
+      lcopy((long)buffer_list_header,(long)line_buffer,80);
+    } else if (buffers[bid].filename[0]) {      
+      // File name
+      for(i=0;buffers[bid].filename[i]&&(i<16);i++)
+	line_buffer[i]=buffers[bid].filename[i];      
+      
+      // Then loaded and dirty flags
+      if (buffers[bid].dirty) line_buffer[18]=0x44;
+      if (buffers[bid].loaded) line_buffer[19]=0x4C;
+      
+      // Then buffer address (hex)
+      screen_hex((unsigned int)&line_buffer[40],
+		 buffers[bid].resident_address_low);
+      //		 +(((long)buffers[bid].resident_address_high)<<16L));
+      
+      // Then allocated length (hex)
+      screen_hex((unsigned int)&line_buffer[48],buffers[bid].allocated);
+      
+      // Then used length (hex)
+      screen_decimal((unsigned int)&line_buffer[56],buffers[bid].length,
+		     NORMAL_VIDEO);
+    }
+  } else {
+    // Find the line in the buffer
+    line_offset_in_buffer=line_find_offset(buffer_id,line_number);
+    if (line_offset_in_buffer==0xffff) return 0xff;
+    
+    // Read it into the buffer
+    buffer_get_bytes(buffer_id,line_offset_in_buffer,255,line_buffer);
+    
+    for(line_buffer_length=0;
+	(line_buffer_length<0xff)
+	  &&(line_buffer[line_buffer_length]!='\r')
+	  &&(line_buffer[line_buffer_length]!='\n');line_buffer_length++)
+      continue;
+    if (line_buffer_length==0xff) {
+      display_footer(FOOTER_LINETOOLONG);
+      return 0xff;
+    }
   }
 
   // We have the line, so set appropriate information

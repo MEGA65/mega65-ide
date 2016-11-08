@@ -83,6 +83,59 @@ void window_ensure_cursor_in_window(unsigned char w)
   // XXX - Update column to ensure it is okay
 }
 
+void window_copy_up(unsigned char wid,unsigned char count)
+{
+  unsigned char i;
+  unsigned char win_x=windows[wid].x;
+  unsigned char win_width=windows[wid].width;
+  
+  long colour_address=COLOUR_RAM_ADDRESS+2*80;
+  unsigned int screen_address=SCREEN_ADDRESS+2*80;
+
+  colour_address+=win_x;
+  screen_address+=win_x;
+
+  // XXX Speed up further by working out correct delta and # of lines
+  // to copy.
+  c65_io_enable();
+  while(count) {
+    for(i=2;i<24;i++) {
+      lcopy(screen_address,screen_address-80,win_width);
+      lcopy(colour_address,colour_address-80,win_width);
+      screen_address+=80;
+      colour_address+=80;
+    }
+    --count;
+  }
+}
+
+void window_copy_down(unsigned char wid,unsigned char count)
+{
+  unsigned char i;
+  unsigned char win_x=windows[wid].x;
+  unsigned char win_width=windows[wid].width;
+  
+  long colour_address=COLOUR_RAM_ADDRESS+22*80;
+  unsigned int screen_address=SCREEN_ADDRESS+22*80;
+  
+  colour_address+=win_x;
+  screen_address+=win_x;
+
+  // XXX Speed up further by working out correct delta and # of lines
+  // to copy.
+  c65_io_enable();
+  while(count) {
+    for(i=2;i<24;i++) {
+      lcopy(screen_address,screen_address+80,win_width);
+      lcopy(colour_address,colour_address+80,win_width);
+      screen_address-=80;
+      colour_address-=80;
+    }
+    --count;
+  }
+}
+
+
 
 void window_scroll(unsigned int count)
 {
@@ -95,8 +148,19 @@ void window_scroll(unsigned int count)
     windows[current_window].first_line=new_line;
 
     window_ensure_cursor_in_window(current_window);
-    
-    draw_window(current_window);
+
+    if (count==-1) {
+      // Speed up scrolling up by copying existing window
+      window_copy_down(current_window,1);
+      // Draw new line at top
+      draw_window_line(current_window,0);
+      // XXX Cursor may have moved to bottom line, so draw bottom line?
+    } else if (count==1) {
+      // Speed up scrolling down by copying existing window
+      window_copy_up(current_window,1);
+      draw_window_line(current_window,22);
+      // XXX Cursor may have moved to top line, so top bottom line?
+    } else draw_window(current_window);
   }
 }
 
@@ -225,7 +289,7 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
   
   if (line_fetch(win->bid,win->first_line+l)) {
     // Error fetching line -- draw as black line with blue full-stop in left column
-    screen_colour_line_segment(screen_line_address+win->x,win->width-1,0);
+    screen_colour_line_segment(screen_line_address+win->x,win->width-1,COLOUR_BLACK);
     POKE(screen_line_address+win->x,'.');
     lfill(screen_line_address+win->x+1,' ',win->width-2);
   } else {
@@ -234,7 +298,8 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
 	  (long)screen_line_address+win->x,win->width-1);
     ascii_to_screen_segment((unsigned char *)(screen_line_address+win->x),
 			    win->width,NORMAL_VIDEO);
-    screen_colour_line_segment(screen_line_address+win->x,win->width-1,14);	
+    screen_colour_line_segment(screen_line_address+win->x,win->width-1,
+			       COLOUR_LIGHTBLUE);	
   }
   if ((l+win->first_line)==buffers[win->bid].current_line)
     {
@@ -242,11 +307,12 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
     if ((cursor_position>=0)&&(cursor_position<win->width))
       // Draw cursor using VIC-III enhanced attributes
       lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x
-	   +cursor_position,0x27);
+	   +cursor_position,ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW);
     }
   
   // Draw border character (white | )
   // XXX - It would be nice to have a scroll-bar type indication here as well.
   POKE(screen_line_address+win->x+win->width-1,0x5d); // vertical line
-  lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x+win->width-1,1);
+  lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x+win->width-1,
+	COLOUR_WHITE);
 }

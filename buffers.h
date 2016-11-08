@@ -38,6 +38,11 @@ struct known_buffer {
   unsigned char resident_address_high; // bits 16-23 of resident address  
   unsigned int dirty : 1 ; // indicates if buffer requires saving to disk
   unsigned int loaded : 1; // indicates if buffer currently in RAM
+
+  // Current edit state info
+  unsigned int current_line;
+  unsigned char current_column;
+  unsigned char current_xoffset;
 };
 #define BUFFER_LIST_BASE 0x032cU
 #define BUFFER_LIST_TOP 0x07ffU

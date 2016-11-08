@@ -65,13 +65,37 @@ void window_next_buffer(void)
   }
 }
 
+void window_ensure_cursor_in_window(unsigned char w)
+{
+  // Make sure cursor is still in window.
+  unsigned char bid=windows[w].bid;
+  unsigned int buffer_line=buffers[bid].current_line;
+  unsigned char buffer_column=buffers[bid].current_line;
+  unsigned char buffer_xoffset=buffers[bid].current_xoffset;
+  unsigned int new_line = windows[w].first_line;
+
+  // XXX - Assumes windows are fixed height of 22 lines
+  
+  // Fix line number 
+  if (buffer_line<new_line) buffers[bid].current_line=new_line;
+  if (buffer_line>(new_line+21)) buffers[bid].current_line=new_line+21;
+
+  // XXX - Update column to ensure it is okay
+}
+
+
 void window_scroll(unsigned int count)
 {
   // Scroll count lines down (or -count lines up) in window
   unsigned int buffer_lines=buffers[windows[current_window].bid].line_count;
+  unsigned int buffer_line=buffers[windows[current_window].bid].current_line;  
   unsigned int new_line=windows[current_window].first_line+count;
+  
   if (new_line<buffer_lines) {
     windows[current_window].first_line=new_line;
+
+    window_ensure_cursor_in_window(current_window);
+    
     draw_window(current_window);
   }
 }

@@ -1,7 +1,7 @@
 
 CC65=	/usr/local/bin/cc65
 CL65=	/usr/local/bin/cl65
-COPTS=	-t c64 -O -Or -Oi -Os
+COPTS=	-t c64 -O -Or -Oi -Os --cpu 65c02
 
 FILES=		m65ide.prg \
 		autoboot.c65

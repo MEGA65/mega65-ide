@@ -156,6 +156,7 @@ void window_scroll(unsigned int count)
       draw_window_line(current_window,0);
       
       // XXX Cursor may have moved to bottom line, so draw bottom line?
+      draw_window_line(current_window,22);
 
       // Update title
       draw_window_title(current_window,1);
@@ -163,8 +164,10 @@ void window_scroll(unsigned int count)
       // Speed up scrolling down by copying existing window
       window_copy_up(current_window,1);
       draw_window_line(current_window,22);
-      // XXX Cursor may have moved to top line, so top bottom line?
 
+      // XXX Cursor may have moved to top line, so draw top line?
+      draw_window_line(current_window,0);
+      
       // Update title
       draw_window_title(current_window,1);
     } else draw_window(current_window);

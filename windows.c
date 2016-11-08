@@ -155,8 +155,8 @@ void window_scroll(unsigned int count)
       // Draw new line at top
       draw_window_line(current_window,0);
       
-      // XXX Cursor may have moved to bottom line, so draw bottom line?
-      draw_window_line(current_window,22);
+      // Cursor may have moved to bottom line, so draw if required
+      draw_window_line_cursor(current_window,22);
 
       // Update title
       draw_window_title(current_window,1);
@@ -165,8 +165,8 @@ void window_scroll(unsigned int count)
       window_copy_up(current_window,1);
       draw_window_line(current_window,22);
 
-      // XXX Cursor may have moved to top line, so draw top line?
-      draw_window_line(current_window,0);
+      // Cursor may have moved to top line, so draw if required
+      draw_window_line_cursor(current_window,0);
       
       // Update title
       draw_window_title(current_window,1);
@@ -288,6 +288,24 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
   }
 }
 
+void draw_window_line_cursor(unsigned char w_in, unsigned char l_in)
+{
+  unsigned int screen_line_address=SCREEN_ADDRESS+80;
+  struct window *win=&windows[w_in];
+  w=w_in; l=l_in;
+
+  screen_line_address+=80*l;
+
+  if ((l+win->first_line)==buffers[win->bid].current_line)
+    {
+    int cursor_position=buffers[win->bid].current_column-win->xoffset;
+    if ((cursor_position>=0)&&(cursor_position<win->width))
+      // Draw cursor using VIC-III enhanced attributes
+      lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x
+	   +cursor_position,ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW);
+    }
+}
+
 void draw_window_line(unsigned char w_in, unsigned char l_in)
 {
   // Skip the top line which shows the name of the file
@@ -311,14 +329,8 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
     screen_colour_line_segment(screen_line_address+win->x,win->width-1,
 			       COLOUR_LIGHTBLUE);	
   }
-  if ((l+win->first_line)==buffers[win->bid].current_line)
-    {
-    int cursor_position=buffers[win->bid].current_column-win->xoffset;
-    if ((cursor_position>=0)&&(cursor_position<win->width))
-      // Draw cursor using VIC-III enhanced attributes
-      lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x
-	   +cursor_position,ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW);
-    }
+  
+  draw_window_line_cursor(w_in,l_in);
   
   // Draw border character (white | )
   // XXX - It would be nice to have a scroll-bar type indication here as well.

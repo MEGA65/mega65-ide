@@ -29,3 +29,4 @@ void draw_windows(void);
 void draw_window(unsigned char w);
 void draw_window_title(unsigned char w_in, unsigned char activeP);
 void draw_window_line(unsigned char w_in, unsigned char l_in);
+void draw_window_line_cursor(unsigned char w_in, unsigned char l_in);

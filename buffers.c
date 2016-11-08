@@ -419,7 +419,7 @@ unsigned char buffer_load(unsigned char buffer_id)
 	}
       }
 
-      // Show hex file offset progress while loading
+      // Show lines read so far as progress while loading
       screen_decimal(FOOTER_ADDRESS+69,line_count,REVERSE_VIDEO);
 
       // Draw progress in footline (one > for every 2KB read)
@@ -432,6 +432,12 @@ unsigned char buffer_load(unsigned char buffer_id)
   buffers[buffer_id].line_count=line_count;
   c65_io_enable();
 
+  // Report on what we have read
+  display_footer(FOOTER_LOADEDLINES);
+  screen_decimal(FOOTER_ADDRESS+5,line_count,REVERSE_VIDEO);
+  for(r=0;filename[r];r++)
+    *(unsigned char *)(FOOTER_ADDRESS+22+r)=filename[r]|REVERSE_VIDEO;
+  
   return 0x00;
 }
 

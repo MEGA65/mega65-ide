@@ -9,7 +9,8 @@ unsigned char *footer_messages[FOOTER_MAX+1]={
   "Buffer too large (must be <65535 bytes).                                        ",
   "Line too long. Lines must be <255 characters in length.                         ",
   "Fatal error occurred. Probably a bug. Clue: no clue                             ",
-  "Disk error. Could not read/write buffer or other thing to/from disk.            "
+  "Disk error. Could not read/write buffer or other thing to/from disk.            ",
+  "Read       lines from                                                           "
 };
 unsigned char footers_initialised=0;
 

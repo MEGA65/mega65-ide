@@ -10,7 +10,8 @@
 #define FOOTER_LINETOOLONG   5
 #define FOOTER_FATAL         6
 #define FOOTER_DISKERROR     7
-#define FOOTER_MAX           7
+#define FOOTER_LOADEDLINES   8
+#define FOOTER_MAX           8
 
 #define REVERSE_VIDEO 0x80
 #define NORMAL_VIDEO 0x00

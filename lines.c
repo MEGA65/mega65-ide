@@ -129,7 +129,7 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
 }
 
 unsigned char buffer_list_header[80]=
-  "filename          flags                 base    alloc   length                  ";
+  "filename          flags                 base    alloc   length lines            ";
 
 
 unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)  
@@ -169,10 +169,13 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
       // Then allocated length (hex)
       screen_hex((unsigned int)&line_buffer[48],buffers[bid].allocated);
       
-      // Then used length (hex)
+      // Then used length (decimal)
       screen_decimal((unsigned int)&line_buffer[56],buffers[bid].length,
 		     NORMAL_VIDEO);
 
+      // Then number of lines in buffer (decimal)
+      screen_decimal((unsigned int)&line_buffer[63],buffers[bid].line_count,
+		     NORMAL_VIDEO);
     }    
     // convert screen codes for hex to ASCII
     for(i=0;i<80;i++) if (line_buffer[i]<' ') line_buffer[i]|=0x60;

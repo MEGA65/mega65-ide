@@ -279,6 +279,10 @@ void initialise_buffers(void)
   // For testing, try to load a buffer
   i=buffer_create("memory.h");
   buffer_load(i);
+
+  set_single_window(i);
+  draw_windows();
+
   i=buffer_create("memory.c");
   buffer_load(i);
   i=buffer_create("buffers.c");

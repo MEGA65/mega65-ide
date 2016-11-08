@@ -74,11 +74,11 @@ void window_ensure_cursor_in_window(unsigned char w)
   unsigned char buffer_xoffset=buffers[bid].current_xoffset;
   unsigned int new_line = windows[w].first_line;
 
-  // XXX - Assumes windows are fixed height of 22 lines
+  // XXX - Assumes windows are fixed height of 23 lines
   
   // Fix line number 
   if (buffer_line<new_line) buffers[bid].current_line=new_line;
-  if (buffer_line>(new_line+21)) buffers[bid].current_line=new_line+21;
+  if (buffer_line>(new_line+22)) buffers[bid].current_line=new_line+22;
 
   // XXX - Update column to ensure it is okay
 }
@@ -236,7 +236,17 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
 			    win->width,NORMAL_VIDEO);
     screen_colour_line_segment(screen_line_address+win->x,win->width-1,14);	
   }
-  // Draw border character (reverse 
+  if ((l+win->first_line)==buffers[win->bid].current_line)
+    {
+    int cursor_position=buffers[win->bid].current_column-win->xoffset;
+    if ((cursor_position>=0)&&(cursor_position<win->width))
+      // Draw cursor using VIC-III enhanced attributes
+      lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x
+	   +cursor_position,0x27);
+    }
+  
+  // Draw border character (white | )
+  // XXX - It would be nice to have a scroll-bar type indication here as well.
   POKE(screen_line_address+win->x+win->width-1,0x5d); // vertical line
   lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x+win->width-1,1);
 }

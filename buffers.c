@@ -333,6 +333,7 @@ void buffer_getset_bytes(unsigned char buffer_id,unsigned int offset, unsigned i
 
 FILE *f=NULL;
 FILE *savef=NULL;
+unsigned char string_lines[5]="lines";
 unsigned char string_loading[7]="Reading";
 unsigned char string_saving[8]="Flushing";
 unsigned char filename[2+16+1];
@@ -348,6 +349,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   buffers[buffer_id].line_count=0;
   buffers[buffer_id].allocated=0;
   buffers_calculate_freespace();
+  line_count=0;
 
   if (!buffers[buffer_id].filename[0]) return 0xff;
   
@@ -367,6 +369,7 @@ unsigned char buffer_load(unsigned char buffer_id)
 
   display_footer(FOOTER_BLANK);
   lcopy((long)string_loading,FOOTER_ADDRESS,7);
+  lcopy((long)string_lines,FOOTER_ADDRESS+75,5);
   for(r=0;filename[r];r++) *(unsigned char *)(FOOTER_ADDRESS+7+1+r)=filename[r];
     
   mungedascii_to_screen_80((unsigned char *)FOOTER_ADDRESS,REVERSE_VIDEO);
@@ -389,9 +392,6 @@ unsigned char buffer_load(unsigned char buffer_id)
 	return 0xff;
       }
 
-      // Show hex file offset progress while loading
-      screen_decimal(FOOTER_ADDRESS+75,file_offset,REVERSE_VIDEO);
-
       // Allocate more space for buffer if required.
       if (new_offset>buffers[buffer_id].allocated) {
 	// Preserve loading progress footer
@@ -413,11 +413,15 @@ unsigned char buffer_load(unsigned char buffer_id)
       
       file_offset+=r;
 
-      while(--r!=255) {
-	if ((data_buffer[r]=='\r')||(data_buffer[r]=='\n'))
+      while(--r>0) {
+	if ((data_buffer[r]=='\r')||(data_buffer[r]=='\n')) {
 	  line_count++;
+	}
       }
-      
+
+      // Show hex file offset progress while loading
+      screen_decimal(FOOTER_ADDRESS+69,line_count,REVERSE_VIDEO);
+
       // Draw progress in footline (one > for every 2KB read)
       *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))=('>'|0x80);
     }

@@ -50,6 +50,78 @@ unsigned int last_line_number;
 unsigned int last_line_offset_in_buffer;
 unsigned int line_number_in;
 
+unsigned int line_find_offset_backwards(unsigned char buffer_id,
+					unsigned int line_number)
+{
+  /* If we are called, we are searching backward from last_line_number.
+   */
+
+  line_number=last_line_number-line_number;
+  // we need to search back one line, to find the end of the previous line
+  ++line_number;
+
+  screen_hex(SCREEN_ADDRESS+80*2+60,line_offset_in_buffer);
+  screen_decimal(SCREEN_ADDRESS+80*2+68,line_number,REVERSE_VIDEO);
+  screen_decimal(SCREEN_ADDRESS+80*2+75,line_number_in,REVERSE_VIDEO);
+
+  // Mark search buffer empty to begin with
+  line_search_buffer_offset=255;
+  
+  while(line_number) {
+
+    screen_decimal(SCREEN_ADDRESS,line_number,NORMAL_VIDEO);
+    screen_hex(SCREEN_ADDRESS+6,line_search_buffer_offset);
+    POKE(SCREEN_ADDRESS+0*80+16,PEEK(SCREEN_ADDRESS+0*80+16)+1);
+    
+    while(line_search_buffer_offset!=0) {
+      // Keep loop as simple as possible
+      POKE(SCREEN_ADDRESS+0*80+20,PEEK(SCREEN_ADDRESS+0*80+20)+1);
+      --line_search_buffer_offset;
+      if (line_search_buffer[line_search_buffer_offset]<14) {
+	if ((line_search_buffer[line_search_buffer_offset]=='\r')
+	    ||(line_search_buffer[line_search_buffer_offset]=='\n')) {
+	  line_number--;
+	  if (!line_number) {
+	    // Here is where we want to be.
+	    line_offset_in_buffer+=line_search_buffer_offset+1;
+	    break;
+	  }
+	}
+      }
+    }
+    if (!line_number) break;
+
+    if (!line_offset_in_buffer) {      
+      return 1;
+    }
+
+    // Make sure we have some bytes to work with
+    {
+      // We need to read some more bytes from the buffer to search
+      space_remaining=line_offset_in_buffer;
+      if (space_remaining<255) c=space_remaining; else c=255;
+      buffer_get_bytes(buffer_id,line_offset_in_buffer,c,line_search_buffer);
+      line_search_buffer_offset=c;
+      line_search_buffer_bytes=c;
+      
+      line_offset_in_buffer-=c;
+      
+    }
+    
+  }
+
+  if (!line_number) {
+    // Remember line for next time
+    last_buffer_id=buffer_id;
+    last_line_number=line_number_in;
+    last_line_offset_in_buffer=line_offset_in_buffer;
+    // return address of line
+    return line_offset_in_buffer;
+  }
+
+}
+
+
 unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
 {
   line_number_in=line_number;
@@ -59,16 +131,26 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
       display_footer(FOOTER_DISKERROR);
       return 0xffff;
     }
-  // We shouldn't report a fatal error, as the disk could be removed or all sorts of
-  // other possibilities that aren't our fault.
-  // if (!buffers[buffer_id].loaded) FATAL_ERROR; 
-
+  
   // Start from the beginning of the buffer, and search forward.
   line_search_buffer_offset=0;
   line_search_buffer_bytes=0;
+  if (!line_number) {
+    // Short cut jumping to start of buffer
+    return 0;
+  }
 
+#if 0
   // XXX - When we enable editing of buffers, we have to discard the last_line_number
   // stuff, or at least amend it, if lines are added, deleted or modified
+  if ((last_buffer_id==buffer_id)&&(last_line_number>line_number)) {
+    POKE(SCREEN_ADDRESS+24*80+1,PEEK(SCREEN_ADDRESS+24*80+1)+1);
+  // But don't use if it would be better to search forwards from the beginning.
+    if ((last_line_number-line_number)<line_number)
+      return line_find_offset_backwards(buffer_id,line_number);
+  }
+#endif
+    
   if ((last_buffer_id==buffer_id)&&(last_line_number<=line_number)) {
     // We have recently accessed a line before this one somewhere, so we can
     // re-use that as a starting point
@@ -114,7 +196,7 @@ unsigned int line_find_offset(unsigned char buffer_id, unsigned int line_number)
     }
     
     if (line_search_buffer_offset>=line_search_buffer_bytes) {
-      FATAL_ERROR;
+      return 0xffff;
     }
 
   }

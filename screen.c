@@ -104,6 +104,8 @@ void initialise_footers(void)
   }
 }
 
+unsigned char screen_hex_buffer[6];
+
 unsigned char screen_hex_digits[16]={
   '0','1','2','3','4','5',
   '6','7','8','9',1,2,3,4,5,6};
@@ -151,7 +153,7 @@ void screen_decimal(unsigned int addr,unsigned int v,unsigned char bits)
   value=v;
   
   // Start with all zeros
-  for(ii=0;ii<5;ii++) POKE(addr+ii,0);
+  for(ii=0;ii<5;ii++) screen_hex_buffer[ii]=0;
   
   // Add power of two strings for all non-zero bits in value.
   // XXX - We should use BCD mode to do this more efficiently
@@ -159,30 +161,31 @@ void screen_decimal(unsigned int addr,unsigned int v,unsigned char bits)
     if (value&1) {
       carry=0;
       for(j=4;j<128;j--) {
-	temp=PEEK(addr+j)+screen_decimal_digits[ii][j]+carry;
+	temp=screen_hex_buffer[j]+screen_decimal_digits[ii][j]+carry;
 	if (temp>9) {
 	  temp-=10;
 	  carry=1;
 	} else carry=0;
-	POKE(addr+j,temp);
+	screen_hex_buffer[j]=temp;
       }
     }
     value=value>>1;
   }
 
   // Now convert to ascii digits
-  for(j=0;j<5;j++) POKE(addr+j,(PEEK(addr+j)+'0')|bits);
+  for(j=0;j<5;j++) screen_hex_buffer[j]=screen_hex_buffer[j]|'0'|bits;
 
-  
   // and shift out leading zeros
   for(j=0;j<4;j++) {
-    if (PEEK(addr)!=('0'|bits)) break;
-    POKE(addr,PEEK(addr+1));
-    POKE(addr+1,PEEK(addr+2));
-    POKE(addr+2,PEEK(addr+3));
-    POKE(addr+3,PEEK(addr+4));
-    POKE(addr+4,' '|bits);
+    if (screen_hex_buffer[0]!=('0'|bits)) break;
+    screen_hex_buffer[0]=screen_hex_buffer[1];
+    screen_hex_buffer[1]=screen_hex_buffer[2];
+    screen_hex_buffer[2]=screen_hex_buffer[3];
+    screen_hex_buffer[3]=screen_hex_buffer[4];
+    screen_hex_buffer[4]=' '|bits;
   }
+  // Copy to screen
+  for(j=0;j<4;j++) POKE(addr+j,screen_hex_buffer[j]);
 }
 
 long addr;

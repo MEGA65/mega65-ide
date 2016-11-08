@@ -29,6 +29,7 @@ Comments regarding current design:
 struct known_buffer {
   unsigned char filename[16]; // null if slot unused
   unsigned int length; // used bytes
+  unsigned int line_count; // number of lines in buffer
   unsigned int allocated; // allocated bytes
 
   // Note that resident addresses are relative to "buffer memory", and are

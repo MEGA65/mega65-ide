@@ -340,10 +340,12 @@ unsigned char data_buffer[256];
 int r=0;
 unsigned int file_offset;
 unsigned int new_offset;
+unsigned int line_count;
 
 unsigned char buffer_load(unsigned char buffer_id)
 {
   buffers[buffer_id].loaded=0;
+  buffers[buffer_id].line_count=0;
   buffers[buffer_id].allocated=0;
   buffers_calculate_freespace();
 
@@ -411,6 +413,11 @@ unsigned char buffer_load(unsigned char buffer_id)
       
       file_offset+=r;
 
+      while(--r!=255) {
+	if ((data_buffer[r]=='\r')||(data_buffer[r]=='\n'))
+	  line_count++;
+      }
+      
       // Draw progress in footline (one > for every 2KB read)
       *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))=('>'|0x80);
     }
@@ -418,6 +425,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   fclose(f);
   buffers[buffer_id].length=file_offset;
   buffers[buffer_id].loaded=1;
+  buffers[buffer_id].line_count=line_count;
   c65_io_enable();
 
   return 0x00;

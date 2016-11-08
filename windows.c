@@ -65,10 +65,15 @@ void window_next_buffer(void)
   }
 }
 
-
 void window_scroll(unsigned int count)
 {
-  // XXX - scroll count lines down (or -count lines up) in window
+  // Scroll count lines down (or -count lines up) in window
+  unsigned int buffer_lines=buffers[windows[current_window].bid].line_count;
+  unsigned int new_line=windows[current_window].first_line+count;
+  if (new_line<buffer_lines) {
+    windows[current_window].first_line=new_line;
+    draw_window(current_window);
+  }
 }
 
 void initialise_windows(void)

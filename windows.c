@@ -206,6 +206,7 @@ void window_select(unsigned char win_id)
     if (win_id!=current_window) {
       draw_window_title(win_id,1);
       draw_window_title(current_window,0);
+      draw_window_all_cursors();
     }
   }
   current_window=win_id;
@@ -286,6 +287,34 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
     // medium grey
     lfill(COLOUR_RAM_ADDRESS+windows[w].x,12,windows[w].width-1);
   }
+}
+
+void draw_window_all_cursors(void)
+{
+  unsigned char w_id;
+  for(w_id=0;w_id<window_count;w_id++)
+    if (w_id!=current_window)
+      draw_window_update_cursor(w_id);
+}
+
+/* Redraw the cursor in this window.
+   If it is the active window, then draw it normal (yellow+blinking).
+   If not the active window, then it shouldn't blink, and maybe should
+   be a different colour? 
+*/
+void draw_window_update_cursor(unsigned char w_in)
+{
+  // Work out if cursor is visible
+  struct window *win=&windows[w_in];
+  int cursor_line=buffers[win->bid].current_line-win->first_line;
+  unsigned char cursor_position=buffers[win->bid].current_column-win->xoffset+win->x;
+  long cursor_address=COLOUR_RAM_ADDRESS+(cursor_line+1)*80+cursor_position;
+  if (cursor_line<0||cursor_line>22) return;
+  if (cursor_position>=win->width) return;
+  if (w_in==current_window)
+    lpoke(cursor_address,ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW);
+  else
+    lpoke(cursor_address,ATTRIB_REVERSE+COLOUR_YELLOW);
 }
 
 void draw_window_line_cursor(unsigned char w_in, unsigned char l_in)

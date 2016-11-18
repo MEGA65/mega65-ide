@@ -323,9 +323,12 @@ void draw_window_update_cursor(unsigned char w_in)
 
 void draw_window_line_cursor(unsigned char w_in, unsigned char l_in)
 {
+  unsigned char cursor_colour=ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW;
   unsigned int screen_line_address=SCREEN_ADDRESS+80;
   struct window *win=&windows[w_in];
   w=w_in; l=l_in;
+
+  if (w_in!=current_window) cursor_colour=ATTRIB_REVERSE+COLOUR_ORANGE;
 
   screen_line_address+=80*l;
 
@@ -335,7 +338,7 @@ void draw_window_line_cursor(unsigned char w_in, unsigned char l_in)
     if ((cursor_position>=0)&&(cursor_position<win->width))
       // Draw cursor using VIC-III enhanced attributes
       lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x
-	   +cursor_position,ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW);
+	   +cursor_position,cursor_colour);
     }
 }
 

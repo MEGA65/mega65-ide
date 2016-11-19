@@ -289,6 +289,23 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
   }
 }
 
+/* Give the user feedback that the editor is busy.
+   For now, just make all the cursors look inactive.
+*/
+unsigned char ui_busy_flag=0;
+void ui_busy(void)
+{
+  ui_busy_flag=1;
+  draw_window_update_cursor(current_window);
+}
+
+unsigned char ui_notbusy_with_result(unsigned char value)
+{
+  ui_busy_flag=0;
+  draw_window_update_cursor(current_window);
+  return value;
+}
+
 void draw_window_all_cursors(void)
 {
   unsigned char w_id;
@@ -311,7 +328,7 @@ void draw_window_update_cursor(unsigned char w_in)
   unsigned char cursor_position=win->x+buffers[win->bid].current_column-win->xoffset;
   long cursor_address=COLOUR_RAM_ADDRESS+(cursor_line+1)*80+cursor_position;
 
-  if (w_in!=current_window) cursor_colour=ATTRIB_REVERSE+COLOUR_ORANGE;
+  if ((w_in!=current_window)||ui_busy_flag) cursor_colour=ATTRIB_REVERSE+COLOUR_ORANGE;
   
   if (cursor_line<0||cursor_line>22) return;
   if (cursor_position>=window_max_x) return;

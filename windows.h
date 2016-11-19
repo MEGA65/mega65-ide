@@ -33,4 +33,7 @@ void draw_window_line_cursor(unsigned char w_in, unsigned char l_in);
 void draw_window_all_cursors(void);
 void draw_window_update_cursor(unsigned char w_in);
 
+unsigned char ui_notbusy_with_result(unsigned char value);
+void ui_busy(void);
+
 

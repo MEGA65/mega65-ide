@@ -293,8 +293,7 @@ void draw_window_all_cursors(void)
 {
   unsigned char w_id;
   for(w_id=0;w_id<window_count;w_id++)
-    if (w_id!=current_window)
-      draw_window_update_cursor(w_id);
+    draw_window_update_cursor(w_id);
 }
 
 /* Redraw the cursor in this window.
@@ -305,20 +304,20 @@ void draw_window_all_cursors(void)
 void draw_window_update_cursor(unsigned char w_in)
 {
   // Work out if cursor is visible
+  unsigned char cursor_colour=ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW;
   struct window *win=&windows[w_in];
+  unsigned char window_max_x=win->x+win->width;
   int cursor_line=buffers[win->bid].current_line-win->first_line;
-  unsigned char cursor_position=buffers[win->bid].current_column-win->xoffset+win->x;
+  unsigned char cursor_position=win->x+buffers[win->bid].current_column-win->xoffset;
   long cursor_address=COLOUR_RAM_ADDRESS+(cursor_line+1)*80+cursor_position;
 
+  if (w_in!=current_window) cursor_colour=ATTRIB_REVERSE+COLOUR_ORANGE;
+  
   if (cursor_line<0||cursor_line>22) return;
-  if (cursor_position>=(win->x+win->width)) return;
+  if (cursor_position>=window_max_x) return;
   if (cursor_position>79) return;
 
-  if (w_in==current_window)
-    lpoke(cursor_address,ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW);
-  else
-    lpoke(cursor_address,ATTRIB_REVERSE+COLOUR_ORANGE);
-
+  lpoke(cursor_address,cursor_colour);
 }
 
 void draw_window_line_cursor(unsigned char w_in, unsigned char l_in)

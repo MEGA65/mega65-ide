@@ -277,6 +277,11 @@ void initialise_buffers(void)
   buffer_create("*buffer-list*");
 
   // For testing, try to load a buffer
+  set_single_window(0);
+  draw_windows();
+  
+#if 1
+#if 1
   i=buffer_create("memory.h");
   buffer_load(i);
 
@@ -285,14 +290,17 @@ void initialise_buffers(void)
 
   i=buffer_create("memory.c");
   buffer_load(i);
+#endif
   i=buffer_create("buffers.c");
   buffer_load(i);
-
   set_single_window(i);
   draw_windows();
-  
+#endif
+
+#if 1
   i=buffer_create("screen.c");
   buffer_load(i);
+#endif
 
 }
 
@@ -355,14 +363,16 @@ unsigned char buffer_load(unsigned char buffer_id)
   buffers_calculate_freespace();
   line_count=0;
 
-  if (!buffers[buffer_id].filename[0]) return 0xff;
+  ui_busy();
+  
+  if (!buffers[buffer_id].filename[0]) return ui_notbusy_with_result(0xff);
   
   if (buffers[buffer_id].filename[0]=='*') {
     // Pseudo buffer.  If thown away, it just becomes empty
     buffers[buffer_id].length=0;
     buffers[buffer_id].loaded=0;
     buffer_allocate(buffer_id,0);
-    return 0x00;
+    return ui_notbusy_with_result(0x00);
   }
   
   // Initialise null-terminated filename
@@ -379,7 +389,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   mungedascii_to_screen_80((unsigned char *)FOOTER_ADDRESS,REVERSE_VIDEO);
   
   f=fopen(filename,"r");
-  if (!f) return 0xff;
+  if (!f) return ui_notbusy_with_result(0xff);
   
   while(!feof(f)) {
     r=fread(data_buffer,1,256,f);
@@ -393,7 +403,7 @@ unsigned char buffer_load(unsigned char buffer_id)
 	buffer_allocate(buffer_id,0);
 	display_footer(FOOTER_BUFFERTOOBIG);
 	
-	return 0xff;
+	return ui_notbusy_with_result(0xff);
       }
 
       // Allocate more space for buffer if required.
@@ -407,7 +417,7 @@ unsigned char buffer_load(unsigned char buffer_id)
 	  // Allocation failed.
 	  fclose(f);
 	  display_footer(FOOTER_OUTOFMEM);
-	  return 0xff;
+	  return ui_notbusy_with_result(0xff);
 	}
 	footer_restore();
       }
@@ -442,7 +452,7 @@ unsigned char buffer_load(unsigned char buffer_id)
   for(r=0;filename[r];r++)
     *(unsigned char *)(FOOTER_ADDRESS+22+r)=filename[r]|REVERSE_VIDEO;
   
-  return 0x00;
+  return ui_notbusy_with_result(0x00);
 }
 
 /*

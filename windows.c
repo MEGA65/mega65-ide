@@ -25,6 +25,8 @@
 #include "windows.h"
 #include "buffers.h"
 
+unsigned char ui_busy_flag=0;
+
 unsigned char window_count=0;
 unsigned char current_window=0;
 struct window windows[MAX_WINDOWS];
@@ -65,9 +67,12 @@ void window_next_buffer(void)
   }
 }
 
-void window_ensure_cursor_in_window(unsigned char w)
+unsigned char window_ensure_cursor_in_window(unsigned char w)
 {
   // Make sure cursor is still in window.
+
+  unsigned char result=0;
+  
   unsigned char bid=windows[w].bid;
   unsigned int buffer_line=buffers[bid].current_line;
   unsigned char buffer_column=buffers[bid].current_line;
@@ -77,10 +82,28 @@ void window_ensure_cursor_in_window(unsigned char w)
   // XXX - Assumes windows are fixed height of 23 lines
   
   // Fix line number 
-  if (buffer_line<new_line) buffers[bid].current_line=new_line;
-  if (buffer_line>(new_line+22)) buffers[bid].current_line=new_line+22;
+  if (buffer_line<new_line) {
+    buffers[bid].current_line=new_line;
+    result|=0x01;
+  }
+  if (buffer_line>(new_line+22)) {
+    buffers[bid].current_line=new_line+22;
+    result|=0x02;
+  }
 
-  // XXX - Update column to ensure it is okay
+  // Update column to ensure it is okay
+
+  // Check if current column is left of view window
+  if (buffers[bid].current_column<buffer_xoffset) {
+    buffers[bid].current_xoffset=buffers[bid].current_column;
+    result|=0x04;
+  }
+  // Check if current column is right of view window
+  if (buffers[bid].current_column>=(buffer_xoffset+windows[w].width)) {
+    buffers[bid].current_xoffset=buffers[bid].current_column-windows[w].width+1;
+    result|=0x08;
+  }
+  return result;
 }
 
 void window_copy_up(unsigned char wid,unsigned char count)
@@ -135,8 +158,6 @@ void window_copy_down(unsigned char wid,unsigned char count)
   }
 }
 
-
-
 void window_scroll(unsigned int count)
 {
   // Scroll count lines down (or -count lines up) in window
@@ -156,7 +177,7 @@ void window_scroll(unsigned int count)
       draw_window_line(current_window,0);
       
       // Cursor may have moved to bottom line, so draw if required
-      draw_window_line_cursor(current_window,22);
+      draw_window_line_attributes(current_window,22);
 
       // Update title
       draw_window_title(current_window,1);
@@ -166,12 +187,84 @@ void window_scroll(unsigned int count)
       draw_window_line(current_window,22);
 
       // Cursor may have moved to top line, so draw if required
-      draw_window_line_cursor(current_window,0);
+      draw_window_line_attributes(current_window,0);
       
       // Update title
       draw_window_title(current_window,1);
     } else draw_window(current_window);
   }
+}
+
+void window_cursor_left(void)
+{
+  struct window *win=&windows[current_window];
+  unsigned char bid=win->bid;
+  if (buffers[bid].current_column) {
+    // We have moved left on this line
+
+    // Update current column
+    buffers[bid].current_column--;
+
+    if (window_ensure_cursor_in_window(current_window)) {
+      // View port has changed, redraw window
+      draw_window(current_window);
+    } else    
+      // Redraw this line
+      redraw_current_window_line();
+  } else {
+    // We have moved to end of previous line
+
+    if (!buffers[bid].current_line)
+      // We are trying to go backwards at the start of the buffer: do nothing
+      return;
+    
+    // Draw current line without cursor
+    ui_busy_flag|=0x80;
+    redraw_current_window_line();
+    ui_busy_flag&=0x7f;
+
+    // Decrement current line
+    buffers[bid].current_line--;
+
+    // Redraw new current line with cursor
+    redraw_current_window_line();
+    
+  }
+}
+
+void window_cursor_right(void)
+{
+
+}
+
+void window_cursor_start_of_line(void)
+{
+  struct window *win=&windows[current_window];
+  unsigned char bid=win->bid;
+  buffers[bid].current_column=0;
+
+  if (window_ensure_cursor_in_window(current_window)) {
+    // View port has changed, redraw window
+    draw_window(current_window);
+  } else    
+    // Redraw this line
+    redraw_current_window_line();
+}
+
+void window_cursor_end_of_line(void)
+{
+}
+
+
+void redraw_current_window_line(void)
+{
+  struct window *win=&windows[current_window];
+  unsigned char bid=win->bid;
+  int cursor_line=buffers[win->bid].current_line-win->first_line;
+  if (cursor_line<0||cursor_line>22) return;
+
+  draw_window_line(current_window,cursor_line&0xff);
+
 }
 
 void initialise_windows(void)
@@ -292,7 +385,6 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
 /* Give the user feedback that the editor is busy.
    For now, just make all the cursors look inactive.
 */
-unsigned char ui_busy_flag=0;
 void ui_busy(void)
 {
   ui_busy_flag=1;
@@ -313,7 +405,7 @@ void draw_window_all_cursors(void)
     draw_window_update_cursor(w_id);
 }
 
-/* Redraw the cursor in this window.
+/* Redraw the cursor only in this window.
    If it is the active window, then draw it normal (yellow+blinking).
    If not the active window, then it shouldn't blink, and maybe should
    be a different colour? 
@@ -328,6 +420,13 @@ void draw_window_update_cursor(unsigned char w_in)
   unsigned char cursor_position=win->x+buffers[win->bid].current_column-win->xoffset;
   long cursor_address=COLOUR_RAM_ADDRESS+(cursor_line+1)*80+cursor_position;
 
+  // Cursor set invisible (used when moving the cursor around during editing)
+  if (ui_busy_flag&0x80) {
+    // XXX - Should instead work out the attributes for where the cursor was, so that
+    // any highlight can be correctly applied.
+    return;
+  }
+  
   if ((w_in!=current_window)||ui_busy_flag) cursor_colour=ATTRIB_REVERSE+COLOUR_ORANGE;
   
   if (cursor_line<0||cursor_line>22) return;
@@ -337,7 +436,7 @@ void draw_window_update_cursor(unsigned char w_in)
   lpoke(cursor_address,cursor_colour);
 }
 
-void draw_window_line_cursor(unsigned char w_in, unsigned char l_in)
+void draw_window_line_attributes(unsigned char w_in, unsigned char l_in)
 {
   unsigned char cursor_colour=ATTRIB_REVERSE+ATTRIB_BLINK+COLOUR_YELLOW;
   unsigned int screen_line_address=SCREEN_ADDRESS+80;
@@ -381,8 +480,10 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
     screen_colour_line_segment(screen_line_address+win->x,win->width-1,
 			       COLOUR_LIGHTBLUE);	
   }
-  
-  draw_window_line_cursor(w_in,l_in);
+
+  // Draw cursor and any other highlights (such as breakpoints, current line under
+  // debug, and highlighted text for copy/paste buffer).
+  draw_window_line_attributes(w_in,l_in);
   
   // Draw border character (white | )
   // XXX - It would be nice to have a scroll-bar type indication here as well.

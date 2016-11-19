@@ -24,14 +24,20 @@ void window_select(unsigned char win_id);
 void window_prev_buffer(void);
 void window_next_buffer(void);
 void window_scroll(unsigned int count);
+void window_cursor_left(void);
+void window_cursor_right(void);
+void window_cursor_start_of_line(void);
+void window_cursor_end_of_line(void);
+unsigned char window_ensure_cursor_in_window(unsigned char w);
 
 void draw_windows(void);
 void draw_window(unsigned char w);
 void draw_window_title(unsigned char w_in, unsigned char activeP);
 void draw_window_line(unsigned char w_in, unsigned char l_in);
-void draw_window_line_cursor(unsigned char w_in, unsigned char l_in);
+void draw_window_line_attributes(unsigned char w_in, unsigned char l_in);
 void draw_window_all_cursors(void);
 void draw_window_update_cursor(unsigned char w_in);
+void redraw_current_window_line(void);
 
 unsigned char ui_notbusy_with_result(unsigned char value);
 void ui_busy(void);

@@ -74,6 +74,17 @@ unsigned char poll_keyboard(void)
   case 145: // cursor up
     window_scroll(-1);
     break;
+  case 157: // cursor left
+    window_cursor_left();
+    break;
+  case 29: // cursor right
+    window_cursor_right();
+  case 1: // cursor to start of line
+    window_cursor_start_of_line();
+    break;
+  case 5: // cursor to end of line
+    window_cursor_end_of_line();
+    break;
   }
   last_key=key;
   return 0;

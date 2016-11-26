@@ -69,10 +69,10 @@ unsigned char poll_keyboard(void)
     window_next_buffer();
     break;    
   case 17: // cursor down
-    window_cursor_down();
+    window_cursor_down(+1);
     break;
   case 145: // cursor up
-    window_cursor_up();
+    window_cursor_down(-1);
     break;
   case 157: // cursor left
     window_cursor_left();

@@ -451,6 +451,9 @@ void draw_window_line_attributes(unsigned char w_in, unsigned char l_in)
 
   screen_line_address+=80*l;
 
+  // Don't draw cursor if disabled
+  if (ui_busy_flag&0x80) return;
+  
   if ((l+win->first_line)==buffers[win->bid].current_line)
     {
     int cursor_position=buffers[win->bid].current_column-win->xoffset;

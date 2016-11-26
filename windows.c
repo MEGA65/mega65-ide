@@ -318,6 +318,13 @@ void window_cursor_start_of_line(void)
 
 void window_cursor_end_of_line(void)
 {
+  struct window *win=&windows[current_window];
+  unsigned char bid=win->bid;
+
+  line_fetch(bid,buffers[bid].current_line);
+  buffers[bid].current_column=line_buffer_length-1;
+    
+  window_redraw_line_or_window_after_cursor_move();
 }
 
 

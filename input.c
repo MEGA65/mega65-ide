@@ -79,6 +79,7 @@ unsigned char poll_keyboard(void)
     break;
   case 29: // cursor right
     window_cursor_right();
+    break;
   case 1: // cursor to start of line
     window_cursor_start_of_line();
     break;

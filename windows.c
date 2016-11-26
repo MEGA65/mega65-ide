@@ -214,6 +214,8 @@ void window_cursor_left(void)
   } else {
     // We have moved to end of previous line
 
+    // XXX - Commit any changes made to this line
+    
     if (!buffers[bid].current_line)
       // We are trying to go backwards at the start of the buffer: do nothing
       return;
@@ -230,15 +232,50 @@ void window_cursor_left(void)
     line_fetch(bid,buffers[bid].current_line);
     buffers[bid].current_column=line_buffer_length-1;
 
-    // Redraw new current line with cursor
-    redraw_current_window_line();
-    
-  }
+    if (window_ensure_cursor_in_window(current_window)) {
+      // View port has changed, redraw window
+      draw_window(current_window);
+    } else    
+      // Redraw this line
+      redraw_current_window_line();
+  }    
 }
 
 void window_cursor_right(void)
 {
+  struct window *win=&windows[current_window];
+  unsigned char bid=win->bid;
 
+  // Fetch this line if not already fetched
+  line_fetch(bid,buffers[bid].current_line);
+  buffers[bid].current_column++;
+  if (buffers[bid].current_column>=line_buffer_length) {
+    // Move to next line
+
+    // XXX - Commit current line
+
+    // Redraw without cursor
+    ui_busy_flag|=UI_DISABLE_CURSOR;
+    redraw_current_window_line();
+    ui_busy_flag&=~UI_DISABLE_CURSOR;
+    
+    buffers[bid].current_line++;
+    buffers[bid].current_column=0;
+
+    // Make sure cursor still visible in window
+    
+    // Redraw new current line with cursor
+    redraw_current_window_line();   
+  } else {
+
+    // Staying on current line
+    if (window_ensure_cursor_in_window(current_window)) {
+      // View port has changed, redraw window
+      draw_window(current_window);
+    } else    
+      // Redraw this line
+      redraw_current_window_line();    
+  }
 }
 
 void window_cursor_start_of_line(void)

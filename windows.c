@@ -236,7 +236,8 @@ void window_cursor_down(char delta)
   // Draw current line without cursor
   window_erase_cursor();
 
-  buffers[bid].current_line+=delta;
+  if (delta==1) buffers[bid].current_line++;
+  else buffers[bid].current_line--;
   
   // Fetch new current line
   line_fetch(bid,buffers[bid].current_line);

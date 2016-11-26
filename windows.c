@@ -240,8 +240,8 @@ void window_cursor_up(void)
   line_fetch(bid,buffers[bid].current_line);
 
   // If cursor position is beyond end, adjust to end
-  if (buffers[bid].current_column>=line_buffer_length) {
-    buffers[bid].current_column=line_buffer_length-1;
+  if (buffers[bid].current_column>line_buffer_length) {
+    buffers[bid].current_column=line_buffer_length;
   }
 
   // Make sure cursor is still in window, and redraw
@@ -278,7 +278,7 @@ void window_cursor_left(void)
 
     // Fetch new current line, and set current column to end of that line
     line_fetch(bid,buffers[bid].current_line);
-    buffers[bid].current_column=line_buffer_length-1;
+    buffers[bid].current_column=line_buffer_length;
 
     window_redraw_line_or_window_after_cursor_move();
   }    
@@ -291,7 +291,7 @@ void window_cursor_right(void)
   // Fetch this line if not already fetched
   line_fetch(bid,buffers[bid].current_line);
   buffers[bid].current_column++;
-  if (buffers[bid].current_column>=line_buffer_length) {
+  if (buffers[bid].current_column>line_buffer_length) {
     // Move to next line
 
     // XXX - Commit current line
@@ -327,7 +327,7 @@ void window_cursor_end_of_line(void)
   get_current_window_and_buffer();
 
   line_fetch(bid,buffers[bid].current_line);
-  buffers[bid].current_column=line_buffer_length-1;
+  buffers[bid].current_column=line_buffer_length;
     
   window_redraw_line_or_window_after_cursor_move();
 }

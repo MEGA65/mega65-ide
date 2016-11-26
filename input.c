@@ -52,24 +52,24 @@ unsigned char poll_keyboard(void)
   else { if ((++quit_counter)>2) return 0xff; }
 
   switch(key) {
-  case 129: // Switch to window 1, or close other windows
+  case 129: // C=1 = Switch to window 1, or close other windows
     if (last_key==129) { set_single_window(0); draw_windows(); }
     else window_select(0);
     break;
-  case 149: // Switch to window 2, creating it if necessary
+  case 149: // C=2 = Switch to window 2, creating it if necessary
     window_select(1);
     break;
-  case 150: case 151: case 152: // Switch to window 3-5
+  case 150: case 151: case 152: // C=(3-5) Switch to window 3-5
     window_select(key-150+2);
     break;
-  case 191: // Change buffer in current window
+  case 191: // C=b = Change buffer in current window
     window_prev_buffer();
     break;
-  case 170: // Change buffer in current window
+  case 170: // C=n = Change buffer in current window
     window_next_buffer();
     break;    
   case 17: // cursor down
-    window_scroll(1);
+    window_cursor_down();
     break;
   case 145: // cursor up
     window_cursor_up();
@@ -80,10 +80,10 @@ unsigned char poll_keyboard(void)
   case 29: // cursor right
     window_cursor_right();
     break;
-  case 1: // cursor to start of line
+  case 1: // control-a = cursor to start of line
     window_cursor_start_of_line();
     break;
-  case 5: // cursor to end of line
+  case 5: // control-e = cursor to end of line
     window_cursor_end_of_line();
     break;
   }

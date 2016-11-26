@@ -72,7 +72,7 @@ unsigned char poll_keyboard(void)
     window_scroll(1);
     break;
   case 145: // cursor up
-    window_scroll(-1);
+    window_cursor_up();
     break;
   case 157: // cursor left
     window_cursor_left();

@@ -195,6 +195,54 @@ void window_scroll(unsigned int count)
   }
 }
 
+
+void window_erase_cursor(void)
+{
+  ui_busy_flag|=UI_DISABLE_CURSOR;
+  redraw_current_window_line();
+  ui_busy_flag&=~UI_DISABLE_CURSOR;
+}
+
+void window_redraw_line_or_window_after_cursor_move(void)
+{
+  // XXX - Work out if we can scroll to redraw quickly  
+  if (window_ensure_cursor_in_window(current_window)) {
+    // View port has changed, redraw window
+    draw_window(current_window);
+  } else    
+    // Redraw this line
+    redraw_current_window_line();
+}
+
+void window_cursor_up(void)
+{
+  struct window *win=&windows[current_window];
+  unsigned char bid=win->bid;
+
+  // Are we already at the start of the buffer?
+  if (!buffers[bid].current_line) return;
+
+  // XXX Commit current line if dirty
+  
+  // Draw current line without cursor
+  window_erase_cursor();
+
+  buffers[bid].current_line--;
+
+  // Fetch new current line
+  line_fetch(bid,buffers[bid].current_line);
+
+  // If cursor position is beyond end, adjust to end
+  if (buffers[bid].current_column>=line_buffer_length) {
+    buffers[bid].current_column=line_buffer_length-1;
+  }
+
+  // Make sure cursor is still in window, and redraw
+  window_redraw_line_or_window_after_cursor_move();
+
+}
+
+
 void window_cursor_left(void)
 {
   struct window *win=&windows[current_window];
@@ -205,12 +253,7 @@ void window_cursor_left(void)
     // Update current column
     buffers[bid].current_column--;
 
-    if (window_ensure_cursor_in_window(current_window)) {
-      // View port has changed, redraw window
-      draw_window(current_window);
-    } else    
-      // Redraw this line
-      redraw_current_window_line();
+    window_redraw_line_or_window_after_cursor_move();
   } else {
     // We have moved to end of previous line
 
@@ -221,9 +264,7 @@ void window_cursor_left(void)
       return;
     
     // Draw current line without cursor
-    ui_busy_flag|=UI_DISABLE_CURSOR;
-    redraw_current_window_line();
-    ui_busy_flag&=~UI_DISABLE_CURSOR;
+    window_erase_cursor();
 
     // Decrement current line
     buffers[bid].current_line--;
@@ -232,12 +273,7 @@ void window_cursor_left(void)
     line_fetch(bid,buffers[bid].current_line);
     buffers[bid].current_column=line_buffer_length-1;
 
-    if (window_ensure_cursor_in_window(current_window)) {
-      // View port has changed, redraw window
-      draw_window(current_window);
-    } else    
-      // Redraw this line
-      redraw_current_window_line();
+    window_redraw_line_or_window_after_cursor_move();
   }    
 }
 
@@ -255,9 +291,7 @@ void window_cursor_right(void)
     // XXX - Commit current line
 
     // Redraw without cursor
-    ui_busy_flag|=UI_DISABLE_CURSOR;
-    redraw_current_window_line();
-    ui_busy_flag&=~UI_DISABLE_CURSOR;
+    window_erase_cursor();
     
     buffers[bid].current_line++;
     buffers[bid].current_column=0;
@@ -269,12 +303,7 @@ void window_cursor_right(void)
   } else {
 
     // Staying on current line
-    if (window_ensure_cursor_in_window(current_window)) {
-      // View port has changed, redraw window
-      draw_window(current_window);
-    } else    
-      // Redraw this line
-      redraw_current_window_line();    
+    window_redraw_line_or_window_after_cursor_move();
   }
 }
 
@@ -284,12 +313,7 @@ void window_cursor_start_of_line(void)
   unsigned char bid=win->bid;
   buffers[bid].current_column=0;
 
-  if (window_ensure_cursor_in_window(current_window)) {
-    // View port has changed, redraw window
-    draw_window(current_window);
-  } else    
-    // Redraw this line
-    redraw_current_window_line();
+  window_redraw_line_or_window_after_cursor_move();
 }
 
 void window_cursor_end_of_line(void)

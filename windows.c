@@ -249,6 +249,31 @@ void window_cursor_up(void)
 
 }
 
+void window_cursor_down(void)
+{
+  get_current_window_and_buffer();
+
+  // XXX Commit current line if dirty
+  
+  // Draw current line without cursor
+  window_erase_cursor();
+
+  buffers[bid].current_line++;
+
+  // Fetch new current line
+  line_fetch(bid,buffers[bid].current_line);
+
+  // If cursor position is beyond end, adjust to end
+  if (buffers[bid].current_column>line_buffer_length) {
+    buffers[bid].current_column=line_buffer_length;
+  }
+
+  // Make sure cursor is still in window, and redraw
+  window_redraw_line_or_window_after_cursor_move();
+
+}
+
+
 
 void window_cursor_left(void)
 {

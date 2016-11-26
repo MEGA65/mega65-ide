@@ -1,3 +1,4 @@
+#define UI_DISABLE_CURSOR 0x80
 
 struct window {
   // Buffer being displayed

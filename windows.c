@@ -219,9 +219,9 @@ void window_cursor_left(void)
       return;
     
     // Draw current line without cursor
-    ui_busy_flag|=0x80;
+    ui_busy_flag|=UI_DISABLE_CURSOR;
     redraw_current_window_line();
-    ui_busy_flag&=0x7f;
+    ui_busy_flag&=~UI_DISABLE_CURSOR;
 
     // Decrement current line
     buffers[bid].current_line--;
@@ -452,7 +452,7 @@ void draw_window_line_attributes(unsigned char w_in, unsigned char l_in)
   screen_line_address+=80*l;
 
   // Don't draw cursor if disabled
-  if (ui_busy_flag&0x80) return;
+  if (ui_busy_flag&UI_DISABLE_CURSOR) return;
   
   if ((l+win->first_line)==buffers[win->bid].current_line)
     {

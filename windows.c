@@ -227,7 +227,7 @@ void window_cursor_down(char delta)
   get_current_window_and_buffer();
 
   // Are we already at the start of the buffer, and trying to go up?
-  if (delta==-1)
+  if (delta!=1)
     if (!buffers[bid].current_line)
       return;
 

@@ -195,6 +195,14 @@ void window_scroll(unsigned int count)
   }
 }
 
+struct window *win;
+unsigned char bid=0;
+
+void get_current_window_and_buffer(void)
+{
+  win=&windows[current_window];
+  bid=win->bid;
+}
 
 void window_erase_cursor(void)
 {
@@ -216,8 +224,7 @@ void window_redraw_line_or_window_after_cursor_move(void)
 
 void window_cursor_up(void)
 {
-  struct window *win=&windows[current_window];
-  unsigned char bid=win->bid;
+  get_current_window_and_buffer();
 
   // Are we already at the start of the buffer?
   if (!buffers[bid].current_line) return;
@@ -245,8 +252,8 @@ void window_cursor_up(void)
 
 void window_cursor_left(void)
 {
-  struct window *win=&windows[current_window];
-  unsigned char bid=win->bid;
+  get_current_window_and_buffer();
+
   if (buffers[bid].current_column) {
     // We have moved left on this line
 
@@ -279,8 +286,7 @@ void window_cursor_left(void)
 
 void window_cursor_right(void)
 {
-  struct window *win=&windows[current_window];
-  unsigned char bid=win->bid;
+  get_current_window_and_buffer();
 
   // Fetch this line if not already fetched
   line_fetch(bid,buffers[bid].current_line);
@@ -309,8 +315,8 @@ void window_cursor_right(void)
 
 void window_cursor_start_of_line(void)
 {
-  struct window *win=&windows[current_window];
-  unsigned char bid=win->bid;
+  get_current_window_and_buffer();
+
   buffers[bid].current_column=0;
 
   window_redraw_line_or_window_after_cursor_move();
@@ -318,8 +324,7 @@ void window_cursor_start_of_line(void)
 
 void window_cursor_end_of_line(void)
 {
-  struct window *win=&windows[current_window];
-  unsigned char bid=win->bid;
+  get_current_window_and_buffer();
 
   line_fetch(bid,buffers[bid].current_line);
   buffers[bid].current_column=line_buffer_length-1;
@@ -330,9 +335,11 @@ void window_cursor_end_of_line(void)
 
 void redraw_current_window_line(void)
 {
-  struct window *win=&windows[current_window];
-  unsigned char bid=win->bid;
-  int cursor_line=buffers[win->bid].current_line-win->first_line;
+  int cursor_line;
+  
+  get_current_window_and_buffer();
+
+  cursor_line=buffers[win->bid].current_line-win->first_line;
   if (cursor_line<0||cursor_line>22) return;
 
   draw_window_line(current_window,cursor_line&0xff);

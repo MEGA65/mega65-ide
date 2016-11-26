@@ -226,6 +226,10 @@ void window_cursor_left(void)
     // Decrement current line
     buffers[bid].current_line--;
 
+    // Fetch new current line, and set current column to end of that line
+    line_fetch(bid,buffers[bid].current_line);
+    buffers[bid].current_column=line_buffer_length-1;
+
     // Redraw new current line with cursor
     redraw_current_window_line();
     

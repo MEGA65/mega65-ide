@@ -31,11 +31,13 @@ HEADERS=	Makefile \
 		windows.h \
 		input.h
 
+DATAFILES=	ascii8x8.bin
+
 M65IDE.D81:	$(FILES)
 	if [ -a M65IDE.D81 ]; then rm -f M65IDE.D81; fi
 	cbmconvert -v2 -D8o M65IDE.D81 $(FILES) $(M65IDESOURCES) $(HEADERS)
 
-%.s:	%.c $(HEADERS)
+%.s:	%.c $(HEADERS) $(DATAFILES)
 	$(CC65) $(COPTS) -o $@ $<
 
 m65ide.prg:	$(ASSFILES)

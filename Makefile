@@ -30,7 +30,8 @@ HEADERS=	Makefile \
 		buffers.h \
 		lines.h \
 		windows.h \
-		input.h
+		input.h \
+		ascii.h
 
 DATAFILES=	ascii8x8.bin
 
@@ -43,6 +44,11 @@ M65IDE.D81:	$(FILES)
 
 ascii8x8.bin: ascii00-7f.png pngprepare
 	./pngprepare charrom ascii00-7f.png ascii8x8.bin
+
+asciih:	asciih.c
+	$(CC) -o asciih asciih.c
+ascii.h:	asciih
+	./asciih
 
 pngprepare:	pngprepare.c
 	$(CC) -I/usr/local/include -L/usr/local/lib -o pngprepare pngprepare.c -lpng

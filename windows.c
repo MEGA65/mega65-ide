@@ -541,6 +541,8 @@ void draw_window_line_attributes(unsigned char w_in, unsigned char l_in)
     }
 }
 
+unsigned char screen_line_buffer[80];
+
 void draw_window_line(unsigned char w_in, unsigned char l_in)
 {
   // Skip the top line which shows the name of the file
@@ -557,10 +559,14 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
     lfill(screen_line_address+win->x+1,' ',win->width-2);
   } else {
     // We have the line, so draw the appropriate segment in the appropriate place
+    // (Do ASCII to screen conversion off-screen to avoid visible glitching)
+    // XXX - We could do this faster by combining the ascii to screen conversion with
+    // the copy into place.
     lcopy((long)line_buffer+win->xoffset,
+	  (long)screen_line_buffer,win->width-1);
+    ascii_to_screen_segment(screen_line_buffer,win->width,NORMAL_VIDEO);
+    lcopy((long)screen_line_buffer+win->xoffset,
 	  (long)screen_line_address+win->x,win->width-1);
-    ascii_to_screen_segment((unsigned char *)(screen_line_address+win->x),
-			    win->width,NORMAL_VIDEO);
     screen_colour_line_segment(screen_line_address+win->x,win->width-1,
 			       COLOUR_LIGHTBLUE);	
   }

@@ -41,6 +41,12 @@ M65IDE.D81:	$(FILES)
 %.s:	%.c $(HEADERS) $(DATAFILES)
 	$(CC65) $(COPTS) -o $@ $<
 
+ascii8x8.bin: ascii00-3f.png pngprepare
+	./pngprepare charrom ascii00-3f.png ascii8x8.bin
+
+pngprepare:	pngprepare.c
+	$(CC) -I/usr/local/include -L/usr/local/lib -o pngprepare pngprepare.c -lpng
+
 m65ide.prg:	$(ASSFILES) c64-m65ide.cfg
 	$(CL65) $(COPTS) $(LOPTS) -vm -m m65ide.map -o m65ide.prg $(ASSFILES)
 

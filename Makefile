@@ -2,6 +2,7 @@
 CC65=	/usr/local/bin/cc65
 CL65=	/usr/local/bin/cl65
 COPTS=	-t c64 -O -Or -Oi -Os --cpu 65c02
+LOPTS=	-C c64-m65ide.cfg
 
 FILES=		m65ide.prg \
 		autoboot.c65
@@ -40,8 +41,8 @@ M65IDE.D81:	$(FILES)
 %.s:	%.c $(HEADERS) $(DATAFILES)
 	$(CC65) $(COPTS) -o $@ $<
 
-m65ide.prg:	$(ASSFILES)
-	$(CL65) $(COPTS) -vm -m m65ide.map -o m65ide.prg $(ASSFILES)
+m65ide.prg:	$(ASSFILES) c64-m65ide.cfg
+	$(CL65) $(COPTS) $(LOPTS) -vm -m m65ide.map -o m65ide.prg $(ASSFILES)
 
 clean:
 	rm -f M65IDE.D81 $(FILES)

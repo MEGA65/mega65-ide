@@ -219,9 +219,11 @@ void setup_screen(void)
   *((unsigned char*)0xD031)=0xe0;
 
   // Put screen memory somewhere (2KB required)
-  // We are using $A000-$A7FF for now
-  // and use lower-case char set
-  *(unsigned char *)0xD018U=0x06+(((SCREEN_ADDRESS-0x8000U)>>10)<<4);
+  // We are using $A800-$AFFF for screen
+  // Our custom ASCII charset lives at $A000
+  *(unsigned char *)0xD018U=
+    (((CHARSET_ADDRESS-0x8000U)>>11)<<1)
+    +(((SCREEN_ADDRESS-0x8000U)>>10)<<4);
   
 
   // VIC RAM Bank to $C000-$FFFF

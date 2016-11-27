@@ -443,7 +443,7 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
   for(l=0;(l<16)&&buffers[windows[w].bid].filename[l];l++) continue;
   
   // Put line number  
-  screen_decimal((long)window_title_buffer+l+1,windows[w].first_line,NORMAL_VIDEO);
+  screen_decimal((long)window_title_buffer+l+1,windows[w].first_line);
   
   // Put the file name
   lcopy((long)buffers[windows[w].bid].filename,(long)window_title_buffer,l);
@@ -455,10 +455,12 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
   // Change colour of header based on whether we are the active window or not
   if (activeP) {
     // white
-    lfill(COLOUR_RAM_ADDRESS+windows[w].x,1,(windows[w].width-1)|ATTRIB_REVERSE);
+    lfill(COLOUR_RAM_ADDRESS+windows[w].x,COLOUR_WHITE|ATTRIB_REVERSE,
+	  (windows[w].width-1));
   } else {
     // medium grey
-    lfill(COLOUR_RAM_ADDRESS+windows[w].x,12,(windows[w].width-1)|ATTRIB_REVERSE);
+    lfill(COLOUR_RAM_ADDRESS+windows[w].x,COLOUR_GREY|ATTRIB_REVERSE,
+	  (windows[w].width-1));
   }
 }
 
@@ -573,9 +575,9 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
   // debug, and highlighted text for copy/paste buffer).
   draw_window_line_attributes(w_in,l_in);
   
-  // Draw border character (white | )
+  // Draw border character (solid white bar (reversed spaces))
   // XXX - It would be nice to have a scroll-bar type indication here as well.
-  POKE(screen_line_address+win->x+win->width-1,0x5d); // vertical line
+  POKE(screen_line_address+win->x+win->width-1,' ');
   lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x+win->width-1,
-	COLOUR_WHITE);
+	COLOUR_WHITE|ATTRIB_REVERSE);
 }

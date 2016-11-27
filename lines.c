@@ -61,15 +61,15 @@ unsigned int line_find_offset_backwards(unsigned char buffer_id,
   ++line_number;
 
   screen_hex(SCREEN_ADDRESS+80*2+60,line_offset_in_buffer);
-  screen_decimal(SCREEN_ADDRESS+80*2+68,line_number,REVERSE_VIDEO);
-  screen_decimal(SCREEN_ADDRESS+80*2+75,line_number_in,REVERSE_VIDEO);
+  screen_decimal(SCREEN_ADDRESS+80*2+68,line_number);
+  screen_decimal(SCREEN_ADDRESS+80*2+75,line_number_in);
 
   // Mark search buffer empty to begin with
   line_search_buffer_offset=255;
   
   while(line_number) {
 
-    screen_decimal(SCREEN_ADDRESS,line_number,NORMAL_VIDEO);
+    screen_decimal(SCREEN_ADDRESS,line_number);
     screen_hex(SCREEN_ADDRESS+6,line_search_buffer_offset);
     POKE(SCREEN_ADDRESS+0*80+16,PEEK(SCREEN_ADDRESS+0*80+16)+1);
     
@@ -252,12 +252,10 @@ unsigned char line_fetch(unsigned char buffer_id, unsigned int line_number)
       screen_hex((unsigned int)&line_buffer[48],buffers[bid].allocated);
       
       // Then used length (decimal)
-      screen_decimal((unsigned int)&line_buffer[56],buffers[bid].length,
-		     NORMAL_VIDEO);
+      screen_decimal((unsigned int)&line_buffer[56],buffers[bid].length);
 
       // Then number of lines in buffer (decimal)
-      screen_decimal((unsigned int)&line_buffer[63],buffers[bid].line_count,
-		     NORMAL_VIDEO);
+      screen_decimal((unsigned int)&line_buffer[63],buffers[bid].line_count);
     }    
     // convert screen codes for hex to ASCII
     for(i=0;i<80;i++) if (line_buffer[i]<' ') line_buffer[i]|=0x60;

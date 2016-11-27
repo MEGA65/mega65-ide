@@ -434,10 +434,10 @@ unsigned char buffer_load(unsigned char buffer_id)
       }
 
       // Show lines read so far as progress while loading
-      screen_decimal(FOOTER_ADDRESS+69,line_count,REVERSE_VIDEO);
+      screen_decimal(FOOTER_ADDRESS+69,line_count);
 
       // Draw progress in footline (one > for every 2KB read)
-      *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))=('>'|0x80);
+      *(unsigned char *)(FOOTER_ADDRESS+7+1+16+1+(file_offset>>11))='>';
     }
   }
   fclose(f);
@@ -448,9 +448,9 @@ unsigned char buffer_load(unsigned char buffer_id)
 
   // Report on what we have read
   display_footer(FOOTER_LOADEDLINES);
-  screen_decimal(FOOTER_ADDRESS+5,line_count,REVERSE_VIDEO);
+  screen_decimal(FOOTER_ADDRESS+5,line_count);
   for(r=0;filename[r];r++)
-    *(unsigned char *)(FOOTER_ADDRESS+22+r)=filename[r]|REVERSE_VIDEO;
+    *(unsigned char *)(FOOTER_ADDRESS+22+r)=filename[r];
   
   return ui_notbusy_with_result(0x00);
 }

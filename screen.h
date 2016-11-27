@@ -14,9 +14,6 @@
 #define FOOTER_LOADEDLINES   8
 #define FOOTER_MAX           8
 
-#define REVERSE_VIDEO 0x80
-#define NORMAL_VIDEO 0x00
-
 #define ATTRIB_REVERSE 0x20
 #define ATTRIB_BLINK 0x10
 #define ATTRIB_UNDERLINE 0x80
@@ -53,7 +50,7 @@ void screen_colour_line(unsigned char line,unsigned char colour);
 #define screen_colour_line_segment(LA,W,C) lfill(LA+(0x1f800-SCREEN_ADDRESS),C,W)
 
 void screen_hex(unsigned int addr,long value);
-void screen_decimal(unsigned int addr,unsigned int value,unsigned char bits);
+void screen_decimal(unsigned int addr,unsigned int value);
 void set_screen_attributes(long p,unsigned char count,unsigned char attr);
 
 extern unsigned char ascii_map[256];

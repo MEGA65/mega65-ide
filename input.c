@@ -47,7 +47,6 @@ unsigned char quit_counter=0;
 unsigned char poll_keyboard(void)
 {  
   key=cgetc();
-  POKE(SCREEN_ADDRESS,key);
   if (key!=171) quit_counter=0;
   else { if ((++quit_counter)>2) return 0xff; }
 

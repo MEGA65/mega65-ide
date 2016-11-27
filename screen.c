@@ -55,7 +55,7 @@ unsigned char screen_decimal_digits[16][5]={
 
 unsigned char ii,j,carry,temp;
 unsigned int value;
-void screen_decimal(unsigned int addr,unsigned int v,unsigned char bits)
+void screen_decimal(unsigned int addr,unsigned int v)
 {
   // XXX - We should do this off-screen and copy into place later, to avoid glitching
   // on display.
@@ -83,16 +83,16 @@ void screen_decimal(unsigned int addr,unsigned int v,unsigned char bits)
   }
 
   // Now convert to ascii digits
-  for(j=0;j<5;j++) screen_hex_buffer[j]=screen_hex_buffer[j]|'0'|bits;
+  for(j=0;j<5;j++) screen_hex_buffer[j]=screen_hex_buffer[j]|'0';
 
   // and shift out leading zeros
   for(j=0;j<4;j++) {
-    if (screen_hex_buffer[0]!=('0'|bits)) break;
+    if (screen_hex_buffer[0]!='0') break;
     screen_hex_buffer[0]=screen_hex_buffer[1];
     screen_hex_buffer[1]=screen_hex_buffer[2];
     screen_hex_buffer[2]=screen_hex_buffer[3];
     screen_hex_buffer[3]=screen_hex_buffer[4];
-    screen_hex_buffer[4]=' '|bits;
+    screen_hex_buffer[4]=' ';
   }
   // Copy to screen
   for(j=0;j<4;j++) POKE(addr+j,screen_hex_buffer[j]);
@@ -165,10 +165,10 @@ unsigned char i;
 void fatal_error(unsigned char *filename, unsigned int line_number)
 {
   display_footer(FOOTER_FATAL);
-  for(i=0;filename[i];i++) POKE(FOOTER_ADDRESS+44+i,filename[i]|REVERSE_VIDEO);
-  POKE(FOOTER_ADDRESS+44+i,':'|REVERSE_VIDEO); i++;
-  screen_decimal(FOOTER_ADDRESS+44+i,line_number,REVERSE_VIDEO);
-  lfill(COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+FOOTER_ADDRESS,2,80);
+  for(i=0;filename[i];i++) POKE(FOOTER_ADDRESS+44+i,filename[i]);
+  POKE(FOOTER_ADDRESS+44+i,':'); i++;
+  screen_decimal(FOOTER_ADDRESS+44+i,line_number);
+  lfill(COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+FOOTER_ADDRESS,2|ATTRIB_REVERSE,80);
   for(;;) continue;
 }
 

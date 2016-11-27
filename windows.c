@@ -579,5 +579,5 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
   // XXX - It would be nice to have a scroll-bar type indication here as well.
   POKE(screen_line_address+win->x+win->width-1,' ');
   lpoke(screen_line_address+COLOUR_RAM_ADDRESS-SCREEN_ADDRESS+win->x+win->width-1,
-	COLOUR_WHITE|ATTRIB_REVERSE);
+	COLOUR_LIGHTGREY|ATTRIB_REVERSE);
 }

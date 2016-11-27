@@ -4,8 +4,9 @@
   $00000-$003FF - C64 ZP, stack etc
   $00400-$007FF - Meta-data for current open buffers
   $00800-$09FFF - M65IDE program
-  $0A000-$0A7FF - 2KB screen RAM
-  $0A800-$0FFFF -                               22KB unused (some under IO/ROM)
+  $0A000-$0A7FF - ASCII charset
+  $0A800-$0AFFF - 2KB screen RAM
+  $0B000-$0FFFF -                               20KB unused (some under IO/ROM)
   $10000-$11FFF - C65 DOS
   $12000-$1F7FF - 54KB RAM for buffers etc
   $1F800-$1FFFF - C65 2KB colour RAM for screen

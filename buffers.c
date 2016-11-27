@@ -385,8 +385,8 @@ unsigned char buffer_load(unsigned char buffer_id)
   lcopy((long)string_loading,FOOTER_ADDRESS,7);
   lcopy((long)string_lines,FOOTER_ADDRESS+75,5);
   for(r=0;filename[r];r++) *(unsigned char *)(FOOTER_ADDRESS+7+1+r)=filename[r];
-    
-  mungedascii_to_screen_80((unsigned char *)FOOTER_ADDRESS,REVERSE_VIDEO);
+
+  set_screen_attributes(FOOTER_ADDRESS,80,ATTRIB_REVERSE);
   
   f=fopen(filename,"r");
   if (!f) return ui_notbusy_with_result(0xff);

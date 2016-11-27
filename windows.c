@@ -449,17 +449,16 @@ void draw_window_title(unsigned char w_in, unsigned char activeP)
   lcopy((long)buffers[windows[w].bid].filename,(long)window_title_buffer,l);
   window_title_buffer[l]=' ';
   
-  ascii_to_screen_segment(window_title_buffer,80,REVERSE_VIDEO);
   lcopy((long)window_title_buffer,SCREEN_ADDRESS+windows[w].x,
-	windows[w].width-1);
+	windows[w].width-1);  
 
   // Change colour of header based on whether we are the active window or not
   if (activeP) {
     // white
-    lfill(COLOUR_RAM_ADDRESS+windows[w].x,1,windows[w].width-1);
+    lfill(COLOUR_RAM_ADDRESS+windows[w].x,1,(windows[w].width-1)|ATTRIB_REVERSE);
   } else {
     // medium grey
-    lfill(COLOUR_RAM_ADDRESS+windows[w].x,12,windows[w].width-1);
+    lfill(COLOUR_RAM_ADDRESS+windows[w].x,12,(windows[w].width-1)|ATTRIB_REVERSE);
   }
 }
 
@@ -562,10 +561,9 @@ void draw_window_line(unsigned char w_in, unsigned char l_in)
     // (Do ASCII to screen conversion off-screen to avoid visible glitching)
     // XXX - We could do this faster by combining the ascii to screen conversion with
     // the copy into place.
+    // XXX - When we move to using an ASCII character set, this will all get sorted
+    // out, anyway, as screen and ASCII will then match exactly.
     lcopy((long)line_buffer+win->xoffset,
-	  (long)screen_line_buffer,win->width-1);
-    ascii_to_screen_segment(screen_line_buffer,win->width,NORMAL_VIDEO);
-    lcopy((long)screen_line_buffer+win->xoffset,
 	  (long)screen_line_address+win->x,win->width-1);
     screen_colour_line_segment(screen_line_address+win->x,win->width-1,
 			       COLOUR_LIGHTBLUE);	

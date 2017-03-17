@@ -67,6 +67,27 @@ void window_next_buffer(void)
   }
 }
 
+void window_scroll_if_necessary(void)
+{
+  unsigned char bid=windows[current_window].bid;
+  unsigned int buffer_line=buffers[bid].current_line;
+  unsigned char buffer_column=buffers[bid].current_line;
+  unsigned char buffer_xoffset=windows[current_window].xoffset;
+  unsigned int new_line = windows[current_window].first_line;
+  unsigned char scrolled=0;
+  
+  if (buffer_line<new_line) {
+    windows[current_window].first_line=buffer_line; scrolled=1;
+  }
+  if (buffer_line>(new_line+22)) {
+    windows[current_window].first_line=buffer_line-22; scrolled=1;
+  }
+  
+  if (scrolled) {
+    draw_window(current_window);
+  }
+}
+
 unsigned char window_ensure_cursor_in_window(unsigned char w)
 {
   // Make sure cursor is still in window.
@@ -76,7 +97,7 @@ unsigned char window_ensure_cursor_in_window(unsigned char w)
   unsigned char bid=windows[w].bid;
   unsigned int buffer_line=buffers[bid].current_line;
   unsigned char buffer_column=buffers[bid].current_line;
-  unsigned char buffer_xoffset=buffers[bid].current_xoffset;
+  unsigned char buffer_xoffset=windows[w].xoffset;
   unsigned int new_line = windows[w].first_line;
 
   // XXX - Assumes windows are fixed height of 23 lines
@@ -95,12 +116,12 @@ unsigned char window_ensure_cursor_in_window(unsigned char w)
 
   // Check if current column is left of view window
   if (buffers[bid].current_column<buffer_xoffset) {
-    buffers[bid].current_xoffset=buffers[bid].current_column;
+    windows[w].xoffset=buffers[bid].current_column;
     result|=0x04;
   }
   // Check if current column is right of view window
-  if (buffers[bid].current_column>=(buffer_xoffset+windows[w].width)) {
-    buffers[bid].current_xoffset=buffers[bid].current_column-windows[w].width+1;
+  if (buffers[bid].current_column>=(buffer_xoffset+windows[w].width-1)) {
+    windows[w].xoffset=buffers[bid].current_column-windows[w].width+1+1;
     result|=0x08;
   }
   return result;
@@ -216,8 +237,9 @@ void window_redraw_line_or_window_after_cursor_move(void)
   // XXX - Work out if we can scroll to redraw quickly  
   if (window_ensure_cursor_in_window(current_window)) {
     // View port has changed, redraw window
+    get_current_window_and_buffer();
     draw_window(current_window);
-  } else    
+  } else
     // Redraw this line
     redraw_current_window_line();
 }
@@ -238,6 +260,7 @@ void window_cursor_down(char delta)
 
   if (delta==1) buffers[bid].current_line++;
   else buffers[bid].current_line--;
+  window_scroll_if_necessary();
   
   // Fetch new current line
   line_fetch(bid,buffers[bid].current_line);
@@ -248,8 +271,7 @@ void window_cursor_down(char delta)
   }
 
   // Make sure cursor is still in window, and redraw
-  window_redraw_line_or_window_after_cursor_move();
-
+  window_redraw_line_or_window_after_cursor_move();  
 }
 
 void window_cursor_left(void)
@@ -278,6 +300,8 @@ void window_cursor_left(void)
     // Decrement current line
     buffers[bid].current_line--;
 
+    window_scroll_if_necessary();
+    
     // Fetch new current line, and set current column to end of that line
     line_fetch(bid,buffers[bid].current_line);
     buffers[bid].current_column=line_buffer_length;
@@ -305,6 +329,7 @@ void window_cursor_right(void)
     buffers[bid].current_column=0;
 
     // Make sure cursor still visible in window
+    window_scroll_if_necessary();
     
     // Redraw new current line with cursor
     redraw_current_window_line();   

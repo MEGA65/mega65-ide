@@ -45,6 +45,7 @@ void setup_screen(void);
 void display_footer(unsigned char index);
 void footer_save(void);
 void footer_restore(void);
+void display_buffer_position_footer(char bid);
 
 void screen_colour_line(unsigned char line,unsigned char colour);
 #define screen_colour_line_segment(LA,W,C) lfill(LA+(0x1f800-SCREEN_ADDRESS),C,W)

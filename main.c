@@ -7,6 +7,10 @@
 
 void main(void)
 {  
+  // Set keyboard IRQ faster, so that cursor movement etc is faster
+  // (approximately 2x normal speed)
+  POKE(0xdc05U,0x20);
+
   setup_screen();
   initialise_windows();
   initialise_buffers();

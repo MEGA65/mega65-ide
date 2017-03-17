@@ -1,6 +1,7 @@
 #include "ascii.h"
 #include "screen.h"
 #include "memory.h"
+#include "buffers.h"
 
 unsigned char *footer_messages[FOOTER_MAX+1]={
   "MEGA65 IDE v00.01 : (C) Copyright 2016 Paul Gardner-Stephen etc.  CTRL-q to exit",
@@ -104,6 +105,14 @@ void display_footer(unsigned char index)
   addr=(long)footer_messages[index];  
   lcopy(addr,FOOTER_ADDRESS,80);
   set_screen_attributes(FOOTER_ADDRESS,80,ATTRIB_REVERSE);
+}
+
+void display_buffer_position_footer(char bid)
+{
+  display_footer(FOOTER_BLANK);
+  screen_decimal(FOOTER_ADDRESS,buffers[bid].current_line);
+  screen_decimal(FOOTER_ADDRESS+6,buffers[bid].current_column);
+  return;
 }
 
 unsigned char saved_footer_buffer[80];

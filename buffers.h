@@ -42,7 +42,6 @@ struct known_buffer {
   // Current edit state info
   unsigned int current_line;
   unsigned char current_column;
-  unsigned char current_xoffset;
 };
 #define BUFFER_LIST_BASE 0x032cU
 #define BUFFER_LIST_TOP 0x07ffU
